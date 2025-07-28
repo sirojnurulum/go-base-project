@@ -1,0 +1,41 @@
+# .air.toml
+# Konfigurasi untuk Air, alat hot-reloading untuk aplikasi Go.
+# Dokumentasi lengkap: https://github.com/cosmtrek/air
+
+# Direktori root dari proyek yang akan diawasi.
+root = "."
+
+# Direktori sementara untuk menyimpan hasil build dan file sementara lainnya.
+tmp_dir = "tmp"
+
+[build]
+# Perintah untuk mengkompilasi aplikasi Anda.
+# Karena main.go berada di dalam subdirektori, kita harus menentukannya secara eksplisit.
+cmd = "go build -o ./tmp/main ./cmd/api"
+
+# File binary yang akan dijalankan oleh Air setelah build berhasil.
+bin = "tmp/main"
+
+# Perintah kustom untuk menjalankan binary. Berguna jika Anda perlu meneruskan flag.
+# Contoh: full_bin = "./tmp/main --port 8080"
+
+# Ekstensi file yang akan dipantau perubahannya.
+# Kita sertakan .sql agar perubahan migrasi juga memicu reload.
+include_ext = ["go", "tpl", "tmpl", "html", "env", "sql"]
+
+# Direktori yang akan diabaikan saat memantau perubahan.
+exclude_dir = ["assets", "tmp", "vendor", "testdata", "docs"]
+
+# Log file untuk proses build.
+log = "air_build.log"
+
+# Tunda eksekusi setelah perubahan file terdeteksi (dalam milidetik).
+delay = 1000 # 1 detik
+
+[log]
+# Tampilkan waktu pada output log.
+time = true
+
+[misc]
+# Hapus file binary di tmp_dir saat Air dihentikan.
+clean_on_exit = true
