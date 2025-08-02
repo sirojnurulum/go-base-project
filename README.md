@@ -133,3 +133,7 @@ Database migrations are managed using Goose. Migration files are located in the 
     ```bash
     make migrate-down
     ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
