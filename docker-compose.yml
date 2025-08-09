@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: beresin-postgres
+    environment:
+      POSTGRES_DB: beresin_db
+      POSTGRES_USER: beresin_user
+      POSTGRES_PASSWORD: beresin_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beresin_user -d beresin_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: beresin-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beresin-app
+    ports:
+      - "8080:8080"
+    environment:
+      ENV: development
+      PORT: 8080
+      DATABASE_URL: host=postgres user=beresin_user password=beresin_password dbname=beresin_db port=5432 sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      ADMIN_DEFAULT_PASSWORD: admin123
+      FRONTEND_URL: http://localhost:5173
+      GOOGLE_CLIENT_ID: your-google-client-id
+      GOOGLE_CLIENT_SECRET: your-google-client-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

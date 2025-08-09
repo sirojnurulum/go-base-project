@@ -61,7 +61,7 @@ func New(cfg config.Config) (*App, error) {
 	// Dependency Injection
 	repositories := bootstrap.InitRepositories(db)
 	services := bootstrap.InitServices(repositories, redisClient, cfg)
-	handlers := bootstrap.InitHandlers(services, cfg)
+	handlers := bootstrap.InitHandlers(services, cfg, db, redisClient)
 	middlewares := customMiddleware.NewMiddleware(services.Authorization, cfg.JWTSecret)
 
 	// Initialize Echo

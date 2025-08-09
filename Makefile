@@ -109,6 +109,35 @@ swag: ## Generate ulang dokumentasi Swagger
 	@swag init -g cmd/api/main.go
 
 
+# ==============================================================================
+# DOCKER OPERATIONS
+# ==============================================================================
+
+.PHONY: docker-build
+docker-build: ## Build Docker image
+	@echo ">> Building Docker image..."
+	@docker build -t beresin-backend .
+
+.PHONY: docker-run
+docker-run: ## Run application in Docker container
+	@echo ">> Running Docker container..."
+	@docker run -p 8080:8080 --env-file .env beresin-backend
+
+.PHONY: docker-compose-up
+docker-compose-up: ## Start all services with docker-compose
+	@echo ">> Starting all services with docker-compose..."
+	@docker-compose up -d
+
+.PHONY: docker-compose-down
+docker-compose-down: ## Stop all docker-compose services
+	@echo ">> Stopping all docker-compose services..."
+	@docker-compose down
+
+.PHONY: docker-compose-logs
+docker-compose-logs: ## View docker-compose logs
+	@docker-compose logs -f
+
+
 .PHONY: db-reset
 db-reset: ## Hapus semua data (DROP SCHEMA public CASCADE) dan buat ulang skema. Membutuhkan konfirmasi.
 	@read -p "ARE YOU SURE you want to drop the entire public schema? This is irreversible. (y/n) " -n 1 -r; \
