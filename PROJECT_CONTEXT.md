@@ -2,17 +2,19 @@
 
 ## Project Overview
 - **Name**: Beresin Backend
-- **Type**: Go REST API Backend with RBAC
-- **Status**: Production-ready template
-- **Primary Use**: Enterprise-grade backend foundation
+- **Type**: Go REST API Backend with RBAC + Advanced Security
+- **Status**: Production-ready enterprise template
+- **Primary Use**: Secure, scalable backend foundation with comprehensive rate limiting
+- **Last Major Update**: August 10, 2025 - Advanced security implementation
 
 ## Architecture Summary
 - **Pattern**: Clean Architecture (Handler -> Service -> Repository)
-- **Auth**: JWT with refresh token rotation
-- **Database**: PostgreSQL with GORM
-- **Cache**: Redis for sessions and permissions
-- **Framework**: Echo v4
-- **Migration**: Goose
+- **Auth**: JWT with refresh token rotation + comprehensive rate limiting
+- **Database**: PostgreSQL with GORM + UUIDv7 optimization
+- **Cache**: Redis for sessions, permissions + distributed rate limiting
+- **Framework**: Echo v4 with advanced security middleware
+- **Migration**: Goose with automatic execution
+- **Security**: Multi-layer protection (rate limiting + headers + RBAC)
 
 ## Key Features Implemented
 - [x] Complete RBAC system with granular permissions
@@ -25,38 +27,46 @@
 - [x] Swagger API documentation
 - [x] Database connection pooling
 - [x] Graceful shutdown handling
-- [x] **Advanced rate limiting** (in-memory + Redis-based)
-- [x] **Comprehensive security headers** (XSS, CSP, HSTS, etc.)
+- [x] **Advanced dual-strategy rate limiting** (in-memory + Redis sliding window)
+- [x] **Comprehensive security headers** (XSS, CSP, HSTS, privacy policies)
 - [x] **Environment-aware security** (dev vs prod configurations)
+- [x] **Enhanced health checks** with dependency validation
+- [x] **Full containerization** (Docker + docker-compose)
+- [x] **Production security documentation** (SECURITY.md)
 
 ## Technical Decisions Made
-- **UUID Strategy**: UUIDv7 for primary keys (time-ordered)
+- **UUID Strategy**: UUIDv7 for primary keys (time-ordered performance)
 - **Token Strategy**: Short-lived access (15min) + long-lived refresh (7d) with rotation
 - **Caching Strategy**: Redis for refresh tokens and permission caching
 - **Logging Strategy**: Zerolog with context enrichment (request_id, user_id)
-- **Testing Strategy**: Service layer focus with repository mocking
-- **Rate Limiting Strategy**: Dual approach - in-memory for dev, Redis sliding window for production
-- **Security Headers Strategy**: Environment-aware with progressive enhancement (stricter in prod)
-- **IP Detection Strategy**: Real IP with proxy header support for rate limiting
+- **Testing Strategy**: Service layer focus with repository mocking + security middleware tests
+- **Rate Limiting Strategy**: Dual approach - in-memory (dev) + Redis sliding window (prod)
+- **Security Headers Strategy**: Environment-aware progressive enhancement (stricter in prod)
+- **IP Detection Strategy**: Real IP with proxy header support for accurate rate limiting
+- **Middleware Layering**: Security -> Rate Limit -> CORS -> JWT -> Permission checks
+- **Fail-Safe Design**: Rate limiting and security fail-open to maintain availability
 
 ## Current TODO Status
-- **Foundation**: ✅ Complete
-- **Database**: ✅ Complete  
-- **Security**: ✅ Complete (with advanced rate limiting & security headers)
-- **Observability**: 🔄 Partial (missing OpenTelemetry)
-- **Testing**: ✅ Complete
-- **Deployment**: ✅ Complete (Docker + docker-compose added)
-- **Health Checks**: ✅ Enhanced with dependency validation
-- **Rate Limiting**: ✅ Complete (dual strategy: in-memory + Redis)
-- **Security Headers**: ✅ Complete (environment-aware, comprehensive)
+- **Foundation**: ✅ Complete (clean architecture + DI)
+- **Database**: ✅ Complete (migrations + pooling + UUIDv7)
+- **Security**: ✅ Complete ⭐ (RBAC + JWT + rate limiting + security headers)
+- **Observability**: 🔄 Partial (Zerolog + Prometheus, missing OpenTelemetry)
+- **Testing**: ✅ Complete (handlers + services + middleware)
+- **Deployment**: ✅ Complete (Docker + docker-compose)
+- **Health Checks**: ✅ Enhanced (dependency validation + metrics)
+- **Rate Limiting**: ✅ Complete ⭐ (dual strategy: memory + Redis)
+- **Security Headers**: ✅ Complete ⭐ (comprehensive + environment-aware)
+- **Documentation**: ✅ Complete (API docs + security guide)
 
 ## Next Steps
 1. ✅ Complete Docker multi-stage builds
 2. ✅ Add docker-compose for full development stack
-3. Add OpenTelemetry for distributed tracing
-4. Implement Redis-based rate limiting
-5. Add integration tests
-6. Consider adding API versioning strategy
+3. ✅ Advanced rate limiting implementation 
+4. ✅ Comprehensive security headers
+5. Add OpenTelemetry for distributed tracing (optional for microservices)
+6. Consider API versioning strategy (if scaling to multiple versions)
+7. Add integration tests for security features
+8. Consider adding Redis-based session management (if needed)
 
 ## Context for AI Assistant
 This is a **mature, production-ready Go backend template** demonstrating enterprise best practices. When working on this project, focus on:
