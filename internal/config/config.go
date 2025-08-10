@@ -27,6 +27,11 @@ type Config struct {
 	DBMaxIdleConns    int
 	DBConnMaxLifetime time.Duration
 	DBConnMaxIdleTime time.Duration
+
+	// Rate Limiting Settings
+	EnableRateLimit       bool
+	APIRequestsPerMinute  int
+	AuthRequestsPerMinute int
 }
 
 // Load loads environment variables from a .env file or from the system environment.
@@ -56,20 +61,34 @@ func Load(path ...string) (Config, error) {
 		return Config{}, fmt.Errorf("invalid DB_CONN_MAX_IDLE_TIME value: %w", err)
 	}
 
+	// Parse rate limiting settings
+	enableRateLimit := getEnv("ENABLE_RATE_LIMIT", "true") == "true"
+	apiRequestsPerMinute, err := strconv.Atoi(getEnv("API_REQUESTS_PER_MINUTE", "1000"))
+	if err != nil {
+		return Config{}, fmt.Errorf("invalid API_REQUESTS_PER_MINUTE value: %w", err)
+	}
+	authRequestsPerMinute, err := strconv.Atoi(getEnv("AUTH_REQUESTS_PER_MINUTE", "10"))
+	if err != nil {
+		return Config{}, fmt.Errorf("invalid AUTH_REQUESTS_PER_MINUTE value: %w", err)
+	}
+
 	cfg := Config{
-		Port:                 getEnv("PORT", "8080"),
-		DatabaseURL:          getEnv("DATABASE_URL", ""),
-		JWTSecret:            getEnv("JWT_SECRET", ""),
-		Env:                  getEnv("ENV", "development"),
-		RedisURL:             getEnv("REDIS_URL", "redis://localhost:6379/0"),
-		AdminDefaultPassword: getEnv("ADMIN_DEFAULT_PASSWORD", "password"),
-		GoogleClientID:       getEnv("GOOGLE_CLIENT_ID", ""),
-		GoogleClientSecret:   getEnv("GOOGLE_CLIENT_SECRET", ""),
-		FrontendURL:          getEnv("FRONTEND_URL", "http://localhost:5173"),
-		DBMaxOpenConns:       dbMaxOpenConns,
-		DBMaxIdleConns:       dbMaxIdleConns,
-		DBConnMaxLifetime:    dbConnMaxLifetime,
-		DBConnMaxIdleTime:    dbConnMaxIdleTime,
+		Port:                  getEnv("PORT", "8080"),
+		DatabaseURL:           getEnv("DATABASE_URL", ""),
+		JWTSecret:             getEnv("JWT_SECRET", ""),
+		Env:                   getEnv("ENV", "development"),
+		RedisURL:              getEnv("REDIS_URL", "redis://localhost:6379/0"),
+		AdminDefaultPassword:  getEnv("ADMIN_DEFAULT_PASSWORD", "password"),
+		GoogleClientID:        getEnv("GOOGLE_CLIENT_ID", ""),
+		GoogleClientSecret:    getEnv("GOOGLE_CLIENT_SECRET", ""),
+		FrontendURL:           getEnv("FRONTEND_URL", "http://localhost:5173"),
+		DBMaxOpenConns:        dbMaxOpenConns,
+		DBMaxIdleConns:        dbMaxIdleConns,
+		DBConnMaxLifetime:     dbConnMaxLifetime,
+		DBConnMaxIdleTime:     dbConnMaxIdleTime,
+		EnableRateLimit:       enableRateLimit,
+		APIRequestsPerMinute:  apiRequestsPerMinute,
+		AuthRequestsPerMinute: authRequestsPerMinute,
 	}
 
 	if cfg.JWTSecret == "" {

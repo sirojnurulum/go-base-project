@@ -25,6 +25,9 @@
 - [x] Swagger API documentation
 - [x] Database connection pooling
 - [x] Graceful shutdown handling
+- [x] **Advanced rate limiting** (in-memory + Redis-based)
+- [x] **Comprehensive security headers** (XSS, CSP, HSTS, etc.)
+- [x] **Environment-aware security** (dev vs prod configurations)
 
 ## Technical Decisions Made
 - **UUID Strategy**: UUIDv7 for primary keys (time-ordered)
@@ -32,16 +35,20 @@
 - **Caching Strategy**: Redis for refresh tokens and permission caching
 - **Logging Strategy**: Zerolog with context enrichment (request_id, user_id)
 - **Testing Strategy**: Service layer focus with repository mocking
+- **Rate Limiting Strategy**: Dual approach - in-memory for dev, Redis sliding window for production
+- **Security Headers Strategy**: Environment-aware with progressive enhancement (stricter in prod)
+- **IP Detection Strategy**: Real IP with proxy header support for rate limiting
 
 ## Current TODO Status
 - **Foundation**: ✅ Complete
 - **Database**: ✅ Complete  
-- **Security**: ✅ Complete
+- **Security**: ✅ Complete (with advanced rate limiting & security headers)
 - **Observability**: 🔄 Partial (missing OpenTelemetry)
 - **Testing**: ✅ Complete
 - **Deployment**: ✅ Complete (Docker + docker-compose added)
 - **Health Checks**: ✅ Enhanced with dependency validation
-- **Security Headers**: ✅ Added basic security middleware
+- **Rate Limiting**: ✅ Complete (dual strategy: in-memory + Redis)
+- **Security Headers**: ✅ Complete (environment-aware, comprehensive)
 
 ## Next Steps
 1. ✅ Complete Docker multi-stage builds

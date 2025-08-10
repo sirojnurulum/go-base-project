@@ -70,7 +70,7 @@ func New(cfg config.Config) (*App, error) {
 	e.HTTPErrorHandler = handler.CustomHTTPErrorHandler
 
 	// Setup Routes
-	router.SetupRoutes(e, cfg, handlers, middlewares)
+	router.SetupRoutes(e, cfg, handlers, middlewares, redisClient)
 
 	return &App{echo: e, cfg: cfg, db: db}, nil
 }
