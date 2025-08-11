@@ -8,6 +8,7 @@ import (
 
 type RoleRepository interface {
 	Create(role *model.Role) (*model.Role, error)
+	FindByID(id uuid.UUID) (*model.Role, error)
 	FindRoleByName(name string) (*model.Role, error)
 	FindPermissionsByRoleID(roleID uuid.UUID) ([]string, error)
 	UpdateRolePermissions(roleID uuid.UUID, permissionNames []string) error

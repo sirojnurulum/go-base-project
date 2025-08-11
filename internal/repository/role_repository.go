@@ -25,6 +25,15 @@ func NewRoleRepository(db *gorm.DB) RoleRepository {
 	return &roleRepository{db: db}
 }
 
+// FindByID finds a role by ID
+func (r *roleRepository) FindByID(id uuid.UUID) (*model.Role, error) {
+	var role model.Role
+	if err := r.db.First(&role, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &role, nil
+}
+
 func (r *roleRepository) FindRoleByName(name string) (*model.Role, error) {
 	var role model.Role
 	if err := r.db.Where("name = ?", name).First(&role).Error; err != nil {

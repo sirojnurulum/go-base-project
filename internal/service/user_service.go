@@ -5,6 +5,8 @@ import (
 	"beresin-backend/internal/dto"
 	"beresin-backend/internal/model"
 	"beresin-backend/internal/repository"
+	"beresin-backend/internal/util"
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -17,11 +19,15 @@ import (
 // userService implements the UserService interface for user management.
 type userService struct {
 	userRepo repository.UserRepository
+	roleRepo repository.RoleRepository
 }
 
 // NewUserService creates a new instance of userService.
-func NewUserService(userRepo repository.UserRepository) UserService {
-	return &userService{userRepo: userRepo}
+func NewUserService(userRepo repository.UserRepository, roleRepo repository.RoleRepository) UserService {
+	return &userService{
+		userRepo: userRepo,
+		roleRepo: roleRepo,
+	}
 }
 
 // CreateUser creates a new user based on the provided DTO.
@@ -128,7 +134,7 @@ func (s *userService) GetUserByID(id uuid.UUID) (*dto.UserResponse, error) {
 	}, nil
 }
 
-// UpdateUser updates a user's data.
+// UpdateUser updates a user's data with security validations.
 func (s *userService) UpdateUser(id uuid.UUID, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
 	user, err := s.userRepo.FindByIDWithRole(id)
 	if err != nil {
@@ -181,6 +187,101 @@ func (s *userService) DeleteUser(id uuid.UUID) error {
 	// Call the Delete method from the repository
 	if err := s.userRepo.Delete(id); err != nil {
 		return apperror.NewInternalError(fmt.Errorf("failed to delete user: %w", err))
+	}
+
+	return nil
+}
+
+// UpdateUserWithContext updates a user's data with security validations based on current user context.
+func (s *userService) UpdateUserWithContext(ctx context.Context, currentUserID, targetUserID uuid.UUID, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
+	// Prevent self-role modification
+	if currentUserID == targetUserID && req.RoleID != uuid.Nil {
+		return nil, apperror.NewForbiddenError(util.GetUserFriendlyError("cannot_change_own_role"))
+	}
+
+	// Get current user with role
+	currentUser, err := s.userRepo.FindByIDWithRole(currentUserID)
+	if err != nil {
+		return nil, apperror.NewUnauthorizedError(util.GetUserFriendlyError("authorization_context_not_found"))
+	}
+
+	if currentUser.Role == nil {
+		return nil, apperror.NewUnauthorizedError(util.GetUserFriendlyError("current_user_no_role"))
+	}
+
+	// Get target user with role
+	targetUser, err := s.userRepo.FindByIDWithRole(targetUserID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NewNotFoundError("user")
+		}
+		return nil, apperror.NewInternalError(fmt.Errorf("failed to find target user: %w", err))
+	}
+
+	// If role change is requested, validate it
+	if req.RoleID != uuid.Nil {
+		// Get target role
+		targetRole, err := s.roleRepo.FindByID(req.RoleID)
+		if err != nil {
+			return nil, apperror.NewNotFoundError("role")
+		}
+
+		// Validate role assignment authorization
+		if err := s.validateRoleAssignment(currentUser, targetUser, targetRole); err != nil {
+			return nil, err
+		}
+
+		targetUser.RoleID = &req.RoleID
+	}
+
+	// Update other fields
+	if req.Username != "" {
+		targetUser.Username = req.Username
+	}
+	if req.Email != "" {
+		targetUser.Email = req.Email
+	}
+
+	// Save changes
+	if err := s.userRepo.Update(targetUser); err != nil {
+		return nil, apperror.NewInternalError(fmt.Errorf("failed to update user: %w", err))
+	}
+
+	// Fetch updated user with role
+	updatedUser, err := s.userRepo.FindByIDWithRole(targetUserID)
+	if err != nil {
+		return nil, apperror.NewInternalError(fmt.Errorf("failed to fetch updated user: %w", err))
+	}
+
+	roleName := "No Role"
+	if updatedUser.Role != nil {
+		roleName = updatedUser.Role.Name
+	}
+
+	return &dto.UserResponse{
+		ID:        updatedUser.ID,
+		Username:  updatedUser.Username,
+		Email:     updatedUser.Email,
+		Role:      roleName,
+		AvatarURL: updatedUser.AvatarURL,
+	}, nil
+}
+
+// validateRoleAssignment validates if current user can assign target role to target user
+func (s *userService) validateRoleAssignment(currentUser, targetUser *model.User, targetRole *model.Role) error {
+	// Super admin protection - only super admins can modify super admin accounts
+	if targetUser.Role != nil && targetUser.Role.Name == "super_admin" && currentUser.Role.Name != "super_admin" {
+		return apperror.NewForbiddenError(util.GetUserFriendlyError("only_superadmin_can_modify"))
+	}
+
+	// Super admin assignment - only super admins can assign super admin role
+	if targetRole.Name == "super_admin" && currentUser.Role.Name != "super_admin" {
+		return apperror.NewForbiddenError(util.GetUserFriendlyError("only_superadmin_can_assign"))
+	}
+
+	// Role hierarchy validation - users can only assign roles with lower or equal level
+	if currentUser.Role.Level <= targetRole.Level && currentUser.Role.Name != "super_admin" {
+		return apperror.NewForbiddenError(util.GetUserFriendlyError("insufficient_authority_level"))
 	}
 
 	return nil

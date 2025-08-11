@@ -5,6 +5,9 @@ CREATE TABLE roles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
     name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT,
+    level INTEGER NOT NULL DEFAULT 0, -- Role hierarchy level
+    is_system BOOLEAN NOT NULL DEFAULT FALSE, -- System vs custom role
+    is_active BOOLEAN NOT NULL DEFAULT TRUE, -- Active status
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

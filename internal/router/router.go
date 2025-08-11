@@ -96,5 +96,17 @@ func SetupRoutes(e *echo.Echo, cfg config.Config, handlers *bootstrap.Handlers, 
 			userRoutes.PUT("/:id", handlers.User.UpdateUser, m.RequirePermission("users:update"))
 			userRoutes.DELETE("/:id", handlers.User.DeleteUser, m.RequirePermission("users:delete"))
 		}
+
+		organizationRoutes := adminRoutes.Group("/organizations")
+		{
+			organizationRoutes.POST("", handlers.Organization.CreateOrganization, m.RequirePermission("organizations:create"))
+			organizationRoutes.GET("", handlers.Organization.GetAllOrganizations, m.RequirePermission("organizations:read"))
+			organizationRoutes.GET("/:id", handlers.Organization.GetOrganizationByID, m.RequirePermission("organizations:read"))
+			organizationRoutes.PUT("/:id", handlers.Organization.UpdateOrganization, m.RequirePermission("organizations:update"))
+			organizationRoutes.DELETE("/:id", handlers.Organization.DeleteOrganization, m.RequirePermission("organizations:delete"))
+			organizationRoutes.POST("/:id/join", handlers.Organization.JoinOrganization, m.RequirePermission("organizations:join"))
+			organizationRoutes.DELETE("/:id/leave", handlers.Organization.LeaveOrganization, m.RequirePermission("organizations:leave"))
+			organizationRoutes.GET("/:id/members", handlers.Organization.GetOrganizationMembers, m.RequirePermission("organizations:read"))
+		}
 	}
 }

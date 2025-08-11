@@ -44,3 +44,8 @@ func NewUnauthorizedError(message string) *AppError {
 func NewInternalError(err error) *AppError {
 	return NewAppError(http.StatusInternalServerError, "an unexpected error occurred", err)
 }
+
+// NewForbiddenError adalah helper untuk error 403.
+func NewForbiddenError(message string) *AppError {
+	return NewAppError(http.StatusForbidden, message, nil)
+}

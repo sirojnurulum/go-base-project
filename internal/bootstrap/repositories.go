@@ -8,17 +8,20 @@ import (
 
 // Repositories menampung semua instance repository untuk aplikasi.
 type Repositories struct {
-	User repository.UserRepository
-	Role repository.RoleRepository
+	User         repository.UserRepository
+	Role         repository.RoleRepository
+	Organization repository.OrganizationRepositoryInterface
 }
 
 // InitRepositories menginisialisasi semua repository untuk aplikasi.
 func InitRepositories(db *gorm.DB) *Repositories {
 	userRepository := repository.NewUserRepository(db)
 	roleRepository := repository.NewRoleRepository(db)
+	organizationRepository := repository.NewOrganizationRepository(db)
 
 	return &Repositories{
-		User: userRepository,
-		Role: roleRepository,
+		User:         userRepository,
+		Role:         roleRepository,
+		Organization: organizationRepository,
 	}
 }

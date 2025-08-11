@@ -13,6 +13,7 @@ type Services struct {
 	Role          service.RoleService
 	User          service.UserService
 	Authorization service.AuthorizationService
+	Organization  service.OrganizationServiceInterface
 }
 
 // InitServices menginisialisasi semua service untuk aplikasi.
@@ -20,12 +21,14 @@ func InitServices(repos *Repositories, redisClient *redis.Client, cfg config.Con
 	authorizationService := service.NewAuthorizationService(repos.Role, redisClient)
 	authService := service.NewAuthService(repos.User, repos.Role, authorizationService, redisClient, cfg.JWTSecret)
 	roleService := service.NewRoleService(repos.Role, authorizationService)
-	userService := service.NewUserService(repos.User)
+	userService := service.NewUserService(repos.User, repos.Role)
+	organizationService := service.NewOrganizationService(repos.Organization, repos.User)
 
 	return &Services{
 		Auth:          authService,
 		Role:          roleService,
 		User:          userService,
 		Authorization: authorizationService,
+		Organization:  organizationService,
 	}
 }
