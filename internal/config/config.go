@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -29,9 +30,16 @@ type Config struct {
 	DBConnMaxIdleTime time.Duration
 
 	// Rate Limiting Settings
-	EnableRateLimit       bool
-	APIRequestsPerMinute  int
-	AuthRequestsPerMinute int
+	RateLimitRPS     float64
+	RateLimitBurst   int
+	RateLimitStorage string // "memory" or "redis"
+
+	// Security Settings
+	// Security and Debugging
+	EnableSecurityHeaders bool
+	EnableDetailedTracing bool
+	CookieSecure          bool
+	CookieSameSite        string
 }
 
 // Load loads environment variables from a .env file or from the system environment.
@@ -61,22 +69,23 @@ func Load(path ...string) (Config, error) {
 		return Config{}, fmt.Errorf("invalid DB_CONN_MAX_IDLE_TIME value: %w", err)
 	}
 
-	// Parse rate limiting settings
-	enableRateLimit := getEnv("ENABLE_RATE_LIMIT", "true") == "true"
-	apiRequestsPerMinute, err := strconv.Atoi(getEnv("API_REQUESTS_PER_MINUTE", "1000"))
+	// Rate limiting configuration
+	rateLimitRPS, err := strconv.ParseFloat(getEnv("RATE_LIMIT_RPS", "10"), 64)
 	if err != nil {
-		return Config{}, fmt.Errorf("invalid API_REQUESTS_PER_MINUTE value: %w", err)
-	}
-	authRequestsPerMinute, err := strconv.Atoi(getEnv("AUTH_REQUESTS_PER_MINUTE", "10"))
-	if err != nil {
-		return Config{}, fmt.Errorf("invalid AUTH_REQUESTS_PER_MINUTE value: %w", err)
+		return Config{}, fmt.Errorf("invalid RATE_LIMIT_RPS value: %w", err)
 	}
 
+	rateLimitBurst, err := strconv.Atoi(getEnv("RATE_LIMIT_BURST", "20"))
+	if err != nil {
+		return Config{}, fmt.Errorf("invalid RATE_LIMIT_BURST value: %w", err)
+	}
+
+	env := getEnv("ENV", "development")
 	cfg := Config{
 		Port:                  getEnv("PORT", "8080"),
 		DatabaseURL:           getEnv("DATABASE_URL", ""),
 		JWTSecret:             getEnv("JWT_SECRET", ""),
-		Env:                   getEnv("ENV", "development"),
+		Env:                   env,
 		RedisURL:              getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		AdminDefaultPassword:  getEnv("ADMIN_DEFAULT_PASSWORD", "password"),
 		GoogleClientID:        getEnv("GOOGLE_CLIENT_ID", ""),
@@ -86,9 +95,13 @@ func Load(path ...string) (Config, error) {
 		DBMaxIdleConns:        dbMaxIdleConns,
 		DBConnMaxLifetime:     dbConnMaxLifetime,
 		DBConnMaxIdleTime:     dbConnMaxIdleTime,
-		EnableRateLimit:       enableRateLimit,
-		APIRequestsPerMinute:  apiRequestsPerMinute,
-		AuthRequestsPerMinute: authRequestsPerMinute,
+		EnableSecurityHeaders: env == "production",
+		EnableDetailedTracing: getEnvBool("ENABLE_DETAILED_TRACING", env == "development"),
+		CookieSecure:          env == "production",
+		CookieSameSite:        getEnv("COOKIE_SAME_SITE", "lax"),
+		RateLimitRPS:          rateLimitRPS,
+		RateLimitBurst:        rateLimitBurst,
+		RateLimitStorage:      getEnv("RATE_LIMIT_STORAGE", "memory"), // default: memory
 	}
 
 	if cfg.JWTSecret == "" {
@@ -107,7 +120,18 @@ func Load(path ...string) (Config, error) {
 
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
-		return value
+		return strings.TrimSpace(value)
+	}
+	return fallback
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	if value, ok := os.LookupEnv(key); ok {
+		parsed, err := strconv.ParseBool(strings.TrimSpace(value))
+		if err != nil {
+			return fallback
+		}
+		return parsed
 	}
 	return fallback
 }

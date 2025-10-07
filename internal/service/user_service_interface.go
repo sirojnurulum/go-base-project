@@ -1,7 +1,7 @@
 package service
 
 import (
-	"beresin-backend/internal/dto"
+	"go-base-project/internal/dto"
 	"context"
 
 	"github.com/google/uuid"

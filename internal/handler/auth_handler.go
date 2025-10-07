@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"beresin-backend/internal/apperror"
-	"beresin-backend/internal/config"
-	"beresin-backend/internal/constant"
-	"beresin-backend/internal/dto"
-	"beresin-backend/internal/service"
+	"go-base-project/internal/apperror"
+	"go-base-project/internal/config"
+	"go-base-project/internal/constant"
+	"go-base-project/internal/dto"
+	"go-base-project/internal/service"
 	"context"
 	"encoding/json"
 	"errors"

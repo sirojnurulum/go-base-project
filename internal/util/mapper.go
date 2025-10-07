@@ -1,8 +1,8 @@
 package util
 
 import (
-	"beresin-backend/internal/dto"
-	"beresin-backend/internal/model"
+	"go-base-project/internal/dto"
+	"go-base-project/internal/model"
 )
 
 // MapUserToResponse converts a User model to UserResponse DTO

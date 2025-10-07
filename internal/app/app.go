@@ -1,15 +1,15 @@
 package app
 
 import (
-	"beresin-backend/internal/bootstrap"
-	"beresin-backend/internal/config"
-	"beresin-backend/internal/handler"
-	customMiddleware "beresin-backend/internal/middleware"
-	"beresin-backend/internal/router"
-	"beresin-backend/internal/seeder"
-	"beresin-backend/internal/validator"
-	"beresin-backend/platform/database"
-	"beresin-backend/platform/redis"
+	"go-base-project/internal/bootstrap"
+	"go-base-project/internal/config"
+	"go-base-project/internal/handler"
+	customMiddleware "go-base-project/internal/middleware"
+	"go-base-project/internal/router"
+	"go-base-project/internal/seeder"
+	"go-base-project/internal/validator"
+	"go-base-project/platform/database"
+	"go-base-project/platform/redis"
 	"context"
 	"errors"
 	"fmt"
@@ -61,7 +61,7 @@ func New(cfg config.Config) (*App, error) {
 	// Dependency Injection
 	repositories := bootstrap.InitRepositories(db)
 	services := bootstrap.InitServices(repositories, redisClient, cfg)
-	handlers := bootstrap.InitHandlers(services, cfg, db, redisClient)
+	handlers := bootstrap.InitHandlers(services, cfg)
 	middlewares := customMiddleware.NewMiddleware(services.Authorization, cfg.JWTSecret)
 
 	// Initialize Echo

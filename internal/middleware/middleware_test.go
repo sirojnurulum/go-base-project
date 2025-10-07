@@ -1,8 +1,8 @@
 package middleware_test
 
 import (
-	"beresin-backend/internal/constant"
-	"beresin-backend/internal/middleware"
+	"go-base-project/internal/constant"
+	"go-base-project/internal/middleware"
 	"context"
 	"net/http"
 	"net/http/httptest"

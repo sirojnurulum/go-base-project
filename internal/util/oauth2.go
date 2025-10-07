@@ -1,7 +1,7 @@
 package util
 
 import (
-	"beresin-backend/internal/config"
+	"go-base-project/internal/config"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

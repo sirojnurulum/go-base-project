@@ -1,12 +1,12 @@
 package service
 
 import (
-	"beresin-backend/internal/apperror"
-	"beresin-backend/internal/constant"
-	"beresin-backend/internal/dto"
-	"beresin-backend/internal/model"
-	"beresin-backend/internal/repository"
-	"beresin-backend/internal/util"
+	"go-base-project/internal/apperror"
+	"go-base-project/internal/constant"
+	"go-base-project/internal/dto"
+	"go-base-project/internal/model"
+	"go-base-project/internal/repository"
+	"go-base-project/internal/util"
 	"context"
 	"errors"
 	"fmt"

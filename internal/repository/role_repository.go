@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"beresin-backend/internal/model"
+	"go-base-project/internal/model"
 	"context"
 	"errors"
 	"fmt"

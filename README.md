@@ -1,397 +1,273 @@
-# Go Enterprise Backend Template
+# Go Base Project - Auth & RBAC Template
 
-A production-ready Go backend template built with clean architecture, comprehensive security, and enterprise-grade features. This template provides a solid foundation for building scalable web applications with authentication, authorization, and organization management.
+A production-ready Go backend template with comprehensive authentication and role-based access control (RBAC) features. This template provides a solid foundation for building scalable backend applications.
 
-## 🚀 GitHub Template
+## Features
 
-This repository is a GitHub template. Click the "Use this template" button to create a new repository with the same structure and configurations.
+### 🔐 Authentication & Authorization
+- **JWT Token Authentication** with refresh token support
+- **Google OAuth 2.0** integration
+- **Multi-organization support** with context switching
+- **Hierarchical RBAC** system with granular permissions
+- **Permission-based middleware** for route protection
 
-## ✨ Features
+### 🏗️ Architecture
+- **Clean Architecture** with clear separation of concerns
+- **Repository Pattern** for data access abstraction
+- **Dependency Injection** for loose coupling
+- **Middleware-based** request processing
+- **Comprehensive logging** with structured JSON output
 
-### Core Features
-- **Authentication & Authorization** - JWT-based auth with Google OAuth integration
-- **Role-Based Access Control (RBAC)** - Hierarchical permission system with role inheritance
-- **Organization Management** - Multi-tenant architecture with hierarchical organizations
-- **User Management** - Complete user lifecycle with security validations
-- **Security Hardening** - Enterprise-level security headers, rate limiting, and input validation
+### 🚀 Infrastructure
+- **Redis** for caching and session management
+- **PostgreSQL** with GORM for database operations
+- **Rate limiting** with configurable storage backends
+- **Health checks** (public and private endpoints)
+- **Prometheus metrics** integration
+- **OpenTelemetry** tracing support
+- **Swagger/OpenAPI** documentation
 
-### Technical Features  
-- **Clean Architecture** - Layered architecture with proper separation of concerns
-- **Database Migrations** - Schema versioning with Goose
-- **API Documentation** - Auto-generated Swagger/OpenAPI documentation
-- **Structured Logging** - JSON logging with request tracing
-- **Hot Reload** - Development environment with Air
-- **Health Checks** - Comprehensive health monitoring
-- **Metrics** - Prometheus metrics integration
-- **Caching** - Redis-based caching layer
+### 🛡️ Security
+- **Security headers** middleware
+- **CORS** configuration
+- **Request ID** tracking
+- **Input validation** and sanitization
+- **SQL injection** protection via GORM
 
-## 🛠 Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| **Language** | Go 1.21+ |
-| **Framework** | Echo v4 |
-| **Database** | PostgreSQL with GORM |
-| **Cache** | Redis |
-| **Authentication** | JWT + Google OAuth |
-| **Migrations** | Goose |
-| **Documentation** | Swagger/OpenAPI |
-| **Logging** | Zerolog |
-| **Monitoring** | Prometheus |
-| **Development** | Air (hot reload) |
-
-## 🏗 Architecture
-
-```
-cmd/api/                 # Application entrypoint
-internal/
-├── app/                 # Application setup and lifecycle
-├── bootstrap/           # Dependency injection setup
-├── config/              # Configuration management
-├── constant/            # Application constants
-├── dto/                 # Data Transfer Objects
-├── handler/             # HTTP handlers (controllers)
-├── middleware/          # Custom middleware
-├── model/               # Domain models
-├── repository/          # Data access layer
-├── router/              # Route definitions
-├── service/             # Business logic layer
-├── seeder/              # Database seeders
-├── util/                # Utility functions
-└── validator/           # Request validation
-migrations/              # Database migrations
-pkg/                     # Shared packages
-platform/               # External service connections
-```
-
-## 🚦 Getting Started
+## Quick Start
 
 ### Prerequisites
+- Go 1.24.5 or higher
+- PostgreSQL database
+- Redis server (optional, for caching and rate limiting)
 
+### Environment Setup
+
+1. Copy the environment example:
 ```bash
-# Required installations
-go version      # Go 1.21+
-docker --version # Docker for PostgreSQL/Redis
-make --version   # Make for task automation
-
-# Development tools (auto-installed via Makefile)
-air             # Hot reload
-goose           # Database migrations  
-swag            # API documentation
+cp .env.example .env
 ```
 
-### Quick Start
-
-1. **Create from template:**
-   ```bash
-   # Click "Use this template" on GitHub or
-   git clone https://github.com/your-username/go-base-project.git
-   cd go-base-project
-   ```
-
-2. **Setup environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configurations
-   ```
-
-3. **Start development:**
-   ```bash
-   make dev-setup    # Install tools & start services
-   make migrate-up   # Run database migrations
-   make seed         # Seed initial data
-   make dev          # Start development server
-   ```
-
-4. **Access the application:**
-   - API: http://localhost:8080
-   - Swagger: http://localhost:8080/swagger/index.html
-   - Health: http://localhost:8080/api/health/public
-
-## 📝 Environment Configuration
-
-Key environment variables:
-
-```bash
-# Server
-APP_NAME=your-app-name
-APP_ENV=development
-APP_PORT=8080
-APP_TIMEOUT=30
-
-# Database
+2. Configure your environment variables:
+```env
+# Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your-password
-DB_NAME=your-database
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=your_db_name
+DB_SSL_MODE=disable
 
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
+# Redis Configuration (optional)
+REDIS_ADDR=localhost:6379
 REDIS_PASSWORD=
+REDIS_DB=0
 
-# JWT
-JWT_SECRET=your-super-secret-key
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Google OAuth (optional)
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URL=http://localhost:8080/api/auth/google/callback
 
-# Frontend (CORS)
+# Server Configuration
+PORT=8080
+ENV=development
 FRONTEND_URL=http://localhost:3000
+
+# Rate Limiting
+RATE_LIMIT_RPS=100
+RATE_LIMIT_BURST=200
+RATE_LIMIT_STORAGE=memory  # or "redis"
+
+# Security
+ENABLE_SECURITY_HEADERS=true
 ```
 
-## 🔧 Available Commands
+### Database Setup
+
+1. Create the database:
+```sql
+CREATE DATABASE your_db_name;
+```
+
+2. Run migrations:
+```bash
+# Apply migrations in order
+psql -h localhost -U your_db_user -d your_db_name -f migrations/001_create_extensions_and_functions.sql
+psql -h localhost -U your_db_user -d your_db_name -f migrations/002_create_rbac_and_organization_tables.sql
+psql -h localhost -U your_db_user -d your_db_name -f migrations/003_create_users_and_user_organization_tables.sql
+```
+
+3. Seed initial data (optional):
+```bash
+go run cmd/api/main.go --seed
+```
+
+### Running the Application
 
 ```bash
-# Development
-make dev            # Start development server with hot reload
-make dev-setup      # Install development tools
-make build          # Build production binary
-make clean          # Clean build artifacts
+# Install dependencies
+go mod tidy
 
-# Database
-make db-up          # Start PostgreSQL & Redis
-make db-down        # Stop database services
-make migrate-up     # Run all migrations
-make migrate-down   # Rollback last migration
-make migrate-reset  # Reset database
-make seed           # Seed initial data
+# Build the application
+go build -o bin/main ./cmd/api
 
-# Documentation
-make docs           # Generate Swagger documentation
-make docs-serve     # Serve documentation locally
-
-# Quality
-make test           # Run all tests
-make test-coverage  # Run tests with coverage
-make lint           # Run golangci-lint
-make format         # Format code
-
-# Docker
-make docker-build   # Build Docker image
-make docker-run     # Run in Docker
+# Run the application
+./bin/main
 ```
 
-## 🔐 Authentication & Authorization
+The server will start on `http://localhost:8080` (or your configured PORT).
 
-### User Roles Hierarchy
+## API Documentation
+
+Once the server is running, access the Swagger documentation at:
+- **Swagger UI**: `http://localhost:8080/swagger/index.html`
+
+## Project Structure
 
 ```
-Super Admin (Level 0)
-├── Platform Admin (Level 1)  
-│   ├── Company Admin (Level 2)
-│   │   └── Store Manager (Level 3)
-│   └── Company User (Level 2)
-└── Platform User (Level 1)
+.
+├── cmd/
+│   └── api/
+│       └── main.go                 # Application entry point
+├── internal/
+│   ├── app/
+│   │   └── app.go                  # Application initialization
+│   ├── bootstrap/                  # Dependency injection setup
+│   │   ├── handlers.go
+│   │   ├── repositories.go
+│   │   └── services.go
+│   ├── config/
+│   │   └── config.go               # Configuration management
+│   ├── constant/                   # Application constants
+│   ├── dto/                        # Data Transfer Objects
+│   ├── handler/                    # HTTP request handlers
+│   ├── middleware/                 # Custom middleware
+│   ├── model/                      # Database models
+│   ├── repository/                 # Data access layer
+│   ├── router/
+│   │   └── router.go               # Route definitions
+│   ├── seeder/                     # Database seeders
+│   ├── service/                    # Business logic layer
+│   ├── util/                       # Utility functions
+│   └── validator/                  # Custom validators
+├── migrations/                     # Database migrations
+├── platform/                      # External platform integrations
+│   ├── database/
+│   ├── logger/
+│   └── redis/
+└── docs/                          # Swagger documentation
 ```
 
-### API Authentication
+## Key Components
 
-```bash
-# Login
-POST /api/auth/login
-{
-  "email": "admin@example.com", 
-  "password": "password123"
+### Authentication Flow
+
+1. **Login**: POST `/api/auth/login`
+   - Email/password authentication
+   - Returns access and refresh tokens
+
+2. **Google OAuth**: GET `/api/auth/google/login`
+   - Redirects to Google OAuth consent
+   - Callback: GET `/api/auth/google/callback`
+
+3. **Token Refresh**: POST `/api/auth/refresh`
+   - Renew access token using refresh token
+
+4. **Current User**: GET `/api/auth/me`
+   - Get authenticated user information
+
+### RBAC System
+
+#### Permissions
+- Granular permissions like `users:read`, `users:create`, `roles:assign`
+- Hierarchical organization-based permissions
+- Platform-level vs organization-level access
+
+#### Roles
+- Predefined roles with permission sets
+- Custom role creation for organizations
+- Role assignment within organization context
+
+#### Organizations
+- Multi-tenant organization support
+- User membership with organization-specific roles
+- Organization context switching
+
+### Middleware
+
+- **JWT Authentication**: Validates and extracts user from JWT tokens
+- **Permission Check**: Enforces permission-based access control
+- **Organization Context**: Extracts organization context from routes
+- **Rate Limiting**: Configurable rate limiting with Redis/memory storage
+- **Security Headers**: Adds security headers to responses
+- **Request Logging**: Structured logging with request tracking
+
+## Usage Examples
+
+### Adding New Features
+
+1. **Create a new model** in `internal/model/`
+2. **Define DTOs** in `internal/dto/`
+3. **Implement repository** in `internal/repository/`
+4. **Create service** in `internal/service/`
+5. **Add handler** in `internal/handler/`
+6. **Register routes** in `internal/router/router.go`
+7. **Update bootstrap** files to wire dependencies
+
+### Adding Custom Permissions
+
+```go
+// In your service or handler
+if !authService.HasPermission(userID, "your-feature:action") {
+    return echo.NewHTTPError(http.StatusForbidden, "Insufficient permissions")
 }
-
-# Use JWT token in subsequent requests
-Authorization: Bearer <jwt-token>
 ```
 
-### Permission System
+### Organization-Scoped Resources
 
-Permissions follow the pattern: `resource:action`
-
-```
-users:create, users:read, users:update, users:delete
-roles:create, roles:assign
-organizations:create, organizations:manage
-dashboard:view
+```go
+// Use organization context middleware
+orgRoutes := api.Group("/organizations/:orgId", m.JWT, m.OrganizationContext())
+orgRoutes.GET("/resources", handler.GetOrgResources, m.RequirePermission("resources:read"))
 ```
 
-## 🏢 Organization Management
+## Development
 
-### Organization Types
-
-- **Platform** - Top-level organization
-- **Company** - Under platform
-- **Store** - Under company
-
-### Hierarchy Rules
-
-- Users can belong to multiple organizations
-- Permissions inherit down the hierarchy
-- Company admins can manage store-level users
-- Platform admins can manage company-level users
-
-### API Examples
+### Testing
 
 ```bash
-# Create organization
-POST /api/admin/organizations
-{
-  "name": "ACME Corp",
-  "type": "company", 
-  "parent_id": "platform-uuid"
-}
+# Run tests
+go test ./...
 
-# Join organization
-POST /api/admin/organizations/{id}/join
+# Run tests with coverage
+go test -cover ./...
 ```
 
-## 📊 Monitoring & Observability
-
-### Health Checks
-
-- `GET /api/health/public` - Basic health status
-- `GET /api/health/private` - Detailed health with database/redis status
-
-### Metrics
-
-Prometheus metrics available at `/metrics`:
-- HTTP request duration and count
-- Database connection pool stats  
-- Redis operations metrics
-- Custom business metrics
-
-### Logging
-
-Structured JSON logging with request tracing:
-```json
-{
-  "level": "info",
-  "time": "2024-01-01T10:00:00Z",
-  "request_id": "uuid-here",
-  "method": "POST",
-  "path": "/api/users",
-  "status": 201,
-  "duration": 45.2
-}
-```
-
-## 🛡️ Security Features
-
-- **Rate Limiting** - Redis-based with configurable limits
-- **Security Headers** - HSTS, CSP, X-Frame-Options, etc.
-- **Input Validation** - Comprehensive request validation
-- **SQL Injection Prevention** - Parameterized queries with GORM
-- **XSS Protection** - Output encoding and CSP
-- **CORS Configuration** - Configurable cross-origin policies
-
-## 🧪 Testing
+### Building for Production
 
 ```bash
-make test              # Run all tests
-make test-coverage     # With coverage report
-make test-integration  # Integration tests
-make test-e2e         # End-to-end tests
+# Build for Linux
+GOOS=linux GOARCH=amd64 go build -o bin/main-linux ./cmd/api
+
+# Build with optimizations
+go build -ldflags="-s -w" -o bin/main ./cmd/api
 ```
 
-Test structure:
-```
-internal/
-├── handler/
-│   ├── user_handler.go
-│   └── user_handler_test.go
-├── service/  
-│   ├── user_service.go
-│   └── user_service_test.go
-└── repository/
-    ├── user_repository.go
-    └── user_repository_test.go
-```
+## Customization
 
-## 📦 Deployment
+This template is designed to be easily customizable:
 
-### Docker Deployment
+1. **Remove unused features**: Delete components you don't need
+2. **Add business logic**: Extend the service layer with your domain logic
+3. **Modify auth flow**: Customize authentication to fit your requirements
+4. **Extend RBAC**: Add more permission granularity as needed
+5. **Add integrations**: Extend platform layer for external services
 
-```bash
-# Build image
-make docker-build
+## License
 
-# Run with docker-compose
-docker-compose up -d
-```
-
-### Production Checklist
-
-- [ ] Environment variables configured
-- [ ] Database migrations applied
-- [ ] SSL/TLS certificates installed
-- [ ] Reverse proxy configured (Nginx/Traefik)
-- [ ] Monitoring setup (Prometheus/Grafana)
-- [ ] Log aggregation configured
-- [ ] Backup strategy implemented
-- [ ] Security scan completed
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open Pull Request
-
-### Coding Standards
-
-- Follow Go best practices
-- Write tests for new features
-- Update documentation
-- Use conventional commits
-- Run `make lint` before committing
-
-## 📋 API Documentation
-
-Full API documentation is available at `/swagger/index.html` when running the server.
-
-### Key Endpoints
-
-| Endpoint | Method | Description |
-|----------|---------|-------------|
-| `/api/auth/login` | POST | User login |
-| `/api/auth/refresh` | POST | Refresh JWT token |
-| `/api/admin/users` | GET,POST,PUT,DELETE | User management |
-| `/api/admin/roles` | GET,POST,PUT | Role management |  
-| `/api/admin/organizations` | GET,POST,PUT,DELETE | Organization management |
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Database connection failed**
-```bash
-# Check if PostgreSQL is running
-make db-up
-# Verify connection string in .env
-```
-
-**Migration errors**
-```bash 
-# Reset and rerun migrations
-make migrate-reset
-make migrate-up
-```
-
-**Port already in use**
-```bash
-# Kill process on port 8080
-lsof -ti:8080 | xargs kill -9
-```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Echo Framework](https://echo.labstack.com/) - High performance Go web framework
-- [GORM](https://gorm.io/) - Fantastic ORM library for Go
-- [Goose](https://github.com/pressly/goose) - Database migration tool
-- [Air](https://github.com/cosmtrek/air) - Live reload for Go apps
-
----
-
-**Built with ❤️ using Go**
+This project is licensed under the MIT License - see the LICENSE file for details.

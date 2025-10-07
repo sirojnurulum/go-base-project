@@ -1,7 +1,7 @@
 package database
 
 import (
-	"beresin-backend/internal/config"
+	"go-base-project/internal/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

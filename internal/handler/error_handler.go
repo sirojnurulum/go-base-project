@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"beresin-backend/internal/apperror"
-	"beresin-backend/internal/constant"
+	"go-base-project/internal/apperror"
+	"go-base-project/internal/constant"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

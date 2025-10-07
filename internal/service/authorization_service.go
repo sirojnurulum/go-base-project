@@ -1,8 +1,8 @@
 package service
 
 import (
-	"beresin-backend/internal/cache"
-	"beresin-backend/internal/repository"
+	"go-base-project/internal/cache"
+	"go-base-project/internal/repository"
 	"context"
 	"encoding/json"
 	"fmt"

@@ -56,11 +56,6 @@ func NewValidationError(message string) *AppError {
 	return NewAppErrorWithCode(http.StatusBadRequest, message, "VALIDATION_ERROR", nil)
 }
 
-// NewClientError adalah helper untuk error 400 client error.
-func NewClientError(message string) *AppError {
-	return NewAppErrorWithCode(http.StatusBadRequest, message, "CLIENT_ERROR", nil)
-}
-
 // NewInternalError adalah helper untuk error 500.
 func NewInternalError(err error) *AppError {
 	return NewAppErrorWithCode(http.StatusInternalServerError, "an unexpected error occurred", "INTERNAL_ERROR", err)

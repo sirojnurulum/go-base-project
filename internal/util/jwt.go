@@ -1,7 +1,7 @@
 package util
 
 import (
-	"beresin-backend/internal/constant"
+	"go-base-project/internal/constant"
 	"errors"
 	"fmt"
 	"strings"
@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// JWTClaims represents the custom claims for JWT tokens.
+// JWTClaims adalah struct untuk custom claims JWT kita.
 type JWTClaims struct {
 	UserID         uuid.UUID  `json:"user_id"`
 	RoleID         uuid.UUID  `json:"role_id"`
@@ -20,45 +20,7 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// RefreshTokenClaims represents the claims for refresh tokens.
-type RefreshTokenClaims struct {
-	jwt.RegisteredClaims // Only contains standard claims (sub, exp, etc.)
-}
-
-// GenerateAccessToken creates a new access token with user claims.
-func GenerateAccessToken(userID, roleID uuid.UUID, organizationID *uuid.UUID, secret string) (string, error) {
-	claims := JWTClaims{
-		UserID:         userID,
-		RoleID:         roleID,
-		OrganizationID: organizationID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)), // 15 minutes
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			Subject:   userID.String(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
-}
-
-// GenerateRefreshToken creates a new refresh token.
-func GenerateRefreshToken(userID uuid.UUID, secret string) (string, error) {
-	claims := RefreshTokenClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // 7 days
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			Subject:   userID.String(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
-}
-
-// VerifyAndGetClaims parses token from header, verifies it, and returns custom claims.
+// VerifyAndGetClaims mem-parsing token dari header, memverifikasinya, dan mengembalikan custom claims.
 func VerifyAndGetClaims(c echo.Context, jwtSecret string) (*JWTClaims, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
@@ -88,26 +50,62 @@ func VerifyAndGetClaims(c echo.Context, jwtSecret string) (*JWTClaims, error) {
 	return nil, errors.New(constant.ErrMsgInvalidOrExpiredToken)
 }
 
-// VerifyRefreshToken verifies a refresh token and returns the user ID.
-func VerifyRefreshToken(tokenString, secret string) (uuid.UUID, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secret), nil
-	})
+// GenerateAccessToken membuat access token baru.
+func GenerateAccessToken(userID, roleID uuid.UUID, secret string) (string, error) {
+	claims := &JWTClaims{
+		UserID: userID,
+		RoleID: roleID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			Subject:   userID.String(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
+}
 
-	if err != nil {
-		return uuid.Nil, err
+// GenerateAccessTokenWithOrganization membuat access token baru dengan organization context.
+func GenerateAccessTokenWithOrganization(userID, roleID uuid.UUID, organizationID *uuid.UUID, secret string) (string, error) {
+	claims := &JWTClaims{
+		UserID:         userID,
+		RoleID:         roleID,
+		OrganizationID: organizationID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			Subject:   userID.String(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
+}
+
+// GenerateRefreshToken membuat refresh token baru.
+func GenerateRefreshToken(userID uuid.UUID, secret string) (string, error) {
+	// Jika test hook diatur, gunakan untuk mengembalikan token yang dapat diprediksi.
+	if testRefreshTokenHook != nil {
+		return testRefreshTokenHook(), nil
 	}
 
-	if claims, ok := token.Claims.(*RefreshTokenClaims); ok && token.Valid {
-		userID, err := uuid.Parse(claims.Subject)
-		if err != nil {
-			return uuid.Nil, err
-		}
-		return userID, nil
+	// Refresh token tidak perlu membawa role_id, hanya user_id (subject).
+	claims := &jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // 7 days
+		Subject:   userID.String(),
 	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
+}
 
-	return uuid.Nil, errors.New("invalid refresh token")
+// testRefreshTokenHook adalah variabel level paket untuk tes agar dapat mengatur refresh token yang dapat diprediksi.
+var testRefreshTokenHook func() string
+
+// SetTestRefreshToken adalah helper untuk tes agar dapat mengatur refresh token yang dapat diprediksi.
+// Ini hanya boleh digunakan dalam file tes. Ingatlah untuk meresetnya dengan `defer util.SetTestRefreshToken("")`.
+func SetTestRefreshToken(token string) {
+	if token == "" {
+		testRefreshTokenHook = nil
+		return
+	}
+	testRefreshTokenHook = func() string {
+		return token
+	}
 }

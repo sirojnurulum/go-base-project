@@ -1,13 +1,15 @@
 package main
 
 import (
-	"beresin-backend/internal/app"
-	"beresin-backend/internal/config"
-	"beresin-backend/platform/logger"
+	"go-base-project/internal/app"
+	"go-base-project/internal/bootstrap"
+	"go-base-project/internal/config"
+	"go-base-project/platform/logger"
+	"context"
 
 	"github.com/rs/zerolog/log"
 
-	_ "beresin-backend/docs" // swagger docs
+	_ "go-base-project/docs" // swagger docs
 )
 
 // @title Beresin App API
@@ -36,7 +38,18 @@ func main() {
 		Str("frontend_url", cfg.FrontendURL).
 		Msg("Loaded application configuration")
 
-	// 3. Create and run the application
+	// 3. Initialize Tracer Provider
+	tp, err := bootstrap.InitTracerProvider("go-base-project", cfg.EnableDetailedTracing)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize tracer provider")
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Error().Err(err).Msg("Failed to shutdown tracer provider")
+		}
+	}()
+
+	// 4. Create and run the application
 	application, err := app.New(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize application")

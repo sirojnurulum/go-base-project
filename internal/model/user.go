@@ -17,8 +17,6 @@ type User struct {
 	GoogleID     *string        `gorm:"type:varchar(255)" json:"google_id"` // Changed to pointer for proper NULL handling
 	AvatarURL    string         `gorm:"type:text" json:"avatar_url"`
 	AuthProvider string         `gorm:"type:varchar(20);default:'local'" json:"auth_provider"` // Track authentication method
-	IsActive     bool           `gorm:"default:true" json:"is_active"`
-	Name         string         `gorm:"type:varchar(255)" json:"name"`
 	CreatedAt    time.Time      `gorm:"default:now()" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"default:now()" json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`

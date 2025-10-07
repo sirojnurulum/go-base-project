@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"beresin-backend/internal/constant"
+	"go-base-project/internal/constant"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -23,7 +23,7 @@ func (m *Middleware) Logger() echo.MiddlewareFunc {
 			requestID, _ := c.Get(constant.RequestIDKey).(string)
 			userID, _ := c.Get(constant.UserIDKey).(uuid.UUID)
 
-			// Build logger with context
+			// Create a shorter, more readable log format
 			logger := log.Info()
 			if requestID != "" {
 				logger = logger.Str("request_id", requestID)
@@ -32,7 +32,15 @@ func (m *Middleware) Logger() echo.MiddlewareFunc {
 				logger = logger.Str("user_id", userID.String())
 			}
 
-			logger.Str("URI", v.URI).Int("status", v.Status).Dur("latency", v.Latency).Str("method", v.Method).Str("remote_ip", v.RemoteIP).Msg("request")
+			// Simple, clean log format: METHOD /path -> STATUS (latency)
+			logger.
+				Str("URI", v.URI).
+				Int("status", v.Status).
+				Dur("latency", v.Latency).
+				Str("method", v.Method).
+				Str("remote_ip", v.RemoteIP).
+				Msgf("request")
+
 			return nil
 		},
 	})

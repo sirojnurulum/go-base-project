@@ -4,20 +4,142 @@ definitions:
     properties:
       code:
         type: integer
+      error_code:
+        description: Machine-readable error code
+        type: string
       message:
         type: string
+    type: object
+  dto.AddToCancelListRequest:
+    properties:
+      reason:
+        type: string
+      tracking_number:
+        maxLength: 255
+        minLength: 3
+        type: string
+    required:
+    - tracking_number
+    type: object
+  dto.ApprovalDecisionRequest:
+    properties:
+      reason:
+        maxLength: 255
+        type: string
+      status:
+        enum:
+        - approved
+        - rejected
+        type: string
+    required:
+    - status
+    type: object
+  dto.CancellationOrderResponse:
+    properties:
+      added_at:
+        type: string
+      added_by:
+        $ref: '#/definitions/dto.UserBasicResponse'
+      created_at:
+        type: string
+      expedition_type:
+        type: string
+      id:
+        type: string
+      reason:
+        type: string
+      store:
+        $ref: '#/definitions/dto.OrganizationBasicResponse'
+      tracking_number:
+        type: string
+    type: object
+  dto.CreateExpeditionRequest:
+    properties:
+      expedition_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      prefix_pattern:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - expedition_name
+    - prefix_pattern
+    type: object
+  dto.CreateOrganizationRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      organization_type:
+        enum:
+        - company
+        - store
+        type: string
+      parent_organization_id:
+        type: string
+    required:
+    - name
+    - organization_type
+    type: object
+  dto.CreatePermissionRequest:
+    properties:
+      description:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateRoleApprovalRequest:
+    properties:
+      description:
+        maxLength: 255
+        type: string
+      requested_level:
+        description: Level 100 reserved for superadmin
+        maximum: 99
+        minimum: 0
+        type: integer
+      requested_role_name:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - requested_level
+    - requested_role_name
     type: object
   dto.CreateRoleRequest:
     properties:
       description:
         maxLength: 255
         type: string
+      level:
+        description: Level 100 reserved for superadmin
+        maximum: 99
+        minimum: 0
+        type: integer
       name:
         maxLength: 50
         minLength: 3
         type: string
+      predefined_name:
+        description: 'NEW: Android-style name'
+        maxLength: 50
+        minLength: 3
+        type: string
     required:
+    - level
     - name
+    - predefined_name
     type: object
   dto.CreateUserRequest:
     properties:
@@ -40,6 +162,30 @@ definitions:
     - password
     - role_id
     - username
+    type: object
+  dto.ExpeditionResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        $ref: '#/definitions/dto.UserBasicResponse'
+      expedition_name:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      prefix_pattern:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.JoinOrganizationRequest:
+    properties:
+      organization_code:
+        type: string
+    required:
+    - organization_code
     type: object
   dto.LoginRequest:
     properties:
@@ -70,6 +216,48 @@ definitions:
         - $ref: '#/definitions/dto.UserResponse'
         description: Menggunakan UserResponse DTO
     type: object
+  dto.OrganizationBasicResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.OrganizationResponse:
+    properties:
+      child_organizations:
+        items:
+          $ref: '#/definitions/dto.OrganizationResponse'
+        type: array
+      code:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      creator:
+        $ref: '#/definitions/dto.UserResponse'
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      member_count:
+        type: integer
+      name:
+        type: string
+      organization_type:
+        type: string
+      parent_organization:
+        $ref: '#/definitions/dto.OrganizationResponse'
+      parent_organization_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
   dto.PagedUserResponse:
     properties:
       limit:
@@ -89,10 +277,70 @@ definitions:
           $ref: '#/definitions/dto.UserResponse'
         type: array
     type: object
+  dto.PermissionResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.PredefinedRoleOption:
+    properties:
+      description:
+        type: string
+      level:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.RecentUpdatesResponse:
+    properties:
+      timestamp:
+        type: string
+      updates:
+        items:
+          $ref: '#/definitions/dto.UpdateEvent'
+        type: array
+    type: object
   dto.RefreshTokenResponse:
     properties:
       access_token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  dto.RoleApprovalResponse:
+    properties:
+      approver:
+        description: Username of approver
+        type: string
+      approver_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      reason:
+        type: string
+      requested_by:
+        type: string
+      requested_by_user:
+        description: Username of requester
+        type: string
+      requested_level:
+        type: integer
+      requested_role_name:
+        type: string
+      status:
+        type: string
+      updated_at:
         type: string
     type: object
   dto.RoleResponse:
@@ -101,8 +349,162 @@ definitions:
         type: string
       id:
         type: string
+      is_active:
+        description: 'NEW: Role activation status'
+        type: boolean
+      is_system_role:
+        description: 'NEW: System role protection'
+        type: boolean
+      level:
+        description: 'NEW: Hierarchy level'
+        type: integer
       name:
         type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      predefined_name:
+        description: 'NEW: Android-style name'
+        type: string
+    type: object
+  dto.ScanResponse:
+    properties:
+      audio_type:
+        description: '''success'' or ''error'''
+        type: string
+      error:
+        type: string
+      expedition_type:
+        type: string
+      is_cancelled:
+        description: true if tracking number is in cancellation orders
+        type: boolean
+      message:
+        type: string
+      scan_result:
+        description: success, cancelled_warning, duplicate, failed
+        type: string
+      success:
+        type: boolean
+      tracking_number:
+        type: string
+    type: object
+  dto.ScanShippingRequest:
+    properties:
+      tracking_number:
+        maxLength: 255
+        minLength: 3
+        type: string
+    required:
+    - tracking_number
+    type: object
+  dto.ShippedItemResponse:
+    properties:
+      created_at:
+        type: string
+      expedition_type:
+        type: string
+      id:
+        type: string
+      notes:
+        type: string
+      scanned_at:
+        type: string
+      scanned_by:
+        $ref: '#/definitions/dto.UserBasicResponse'
+      store:
+        $ref: '#/definitions/dto.OrganizationBasicResponse'
+      tracking_number:
+        type: string
+    type: object
+  dto.ShippingDashboardResponse:
+    properties:
+      cancelled_list:
+        items:
+          $ref: '#/definitions/dto.CancellationOrderResponse'
+        type: array
+      shipped_items:
+        items:
+          $ref: '#/definitions/dto.ShippedItemResponse'
+        type: array
+      stats:
+        $ref: '#/definitions/dto.ShippingDashboardStatsResponse'
+    type: object
+  dto.ShippingDashboardStatsResponse:
+    properties:
+      this_month_cancelled:
+        type: integer
+      this_month_shipped:
+        type: integer
+      this_week_cancelled:
+        type: integer
+      this_week_shipped:
+        type: integer
+      today_cancelled:
+        type: integer
+      today_shipped:
+        type: integer
+      total_cancelled:
+        type: integer
+      total_shipped:
+        type: integer
+    type: object
+  dto.UpdateEvent:
+    properties:
+      id:
+        type: string
+      message:
+        type: string
+      timestamp:
+        type: string
+      tracking_number:
+        type: string
+      type:
+        description: '"scan", "cancel", "remove"'
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.UpdateExpeditionRequest:
+    properties:
+      expedition_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      is_active:
+        type: boolean
+      prefix_pattern:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - expedition_name
+    - prefix_pattern
+    type: object
+  dto.UpdateOrganizationRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    type: object
+  dto.UpdatePermissionRequest:
+    properties:
+      description:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - name
     type: object
   dto.UpdateRolePermissionsRequest:
     properties:
@@ -127,6 +529,28 @@ definitions:
         minLength: 3
         type: string
     type: object
+  dto.UserBasicResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UserOrganizationResponse:
+    properties:
+      is_active:
+        type: boolean
+      joined_at:
+        type: string
+      organization:
+        $ref: '#/definitions/dto.OrganizationResponse'
+      organization_id:
+        type: string
+      role_in_organization:
+        type: string
+      user_id:
+        type: string
+    type: object
   dto.UserResponse:
     properties:
       avatar_url:
@@ -141,6 +565,9 @@ definitions:
       role:
         example: user
         type: string
+      role_id:
+        example: b1c2d3e4-f5g6-7890-1234-567890abcdef
+        type: string
       username:
         example: johndoe
         type: string
@@ -152,7 +579,360 @@ info:
   title: Beresin App API
   version: "1.0"
 paths:
+  /admin/organizations:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new organization. Requires platform level permissions.
+      parameters:
+      - description: Organization Details
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Organization created successfully
+          schema:
+            $ref: '#/definitions/dto.OrganizationResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a new organization
+      tags:
+      - Admin
+      - Organizations
+  /admin/organizations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an organization. Requires platform level permissions.
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Organization deleted successfully
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete organization
+      tags:
+      - Admin
+      - Organizations
+    put:
+      consumes:
+      - application/json
+      description: Updates organization details. Requires admin permissions for the
+        organization.
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated Organization Details
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization updated successfully
+          schema:
+            $ref: '#/definitions/dto.OrganizationResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update organization
+      tags:
+      - Admin
+      - Organizations
+  /admin/organizations/{id}/members:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all members of an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization members retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserOrganizationResponse'
+            type: array
+        "400":
+          description: Invalid organization ID
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get organization members
+      tags:
+      - Admin
+      - Organizations
+  /admin/permissions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all available permissions in the system. Requires 'permissions:read'
+        permission.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permissions retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.PermissionResponse'
+            type: array
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: List all permissions
+      tags:
+      - Admin
+      - Permissions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new permission in the system. Requires 'permissions:create'
+        permission.
+      parameters:
+      - description: New Permission Details
+        in: body
+        name: permission
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Permission created successfully
+          schema:
+            $ref: '#/definitions/dto.PermissionResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "409":
+          description: Permission with that name already exists
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a new permission
+      tags:
+      - Admin
+      - Permissions
+  /admin/permissions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a permission from the system. Cannot delete if permission
+        is assigned to any roles. Requires 'permissions:delete' permission.
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid permission ID
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Permission not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "409":
+          description: Cannot delete permission assigned to roles
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete a permission
+      tags:
+      - Admin
+      - Permissions
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing permission. Requires 'permissions:update' permission.
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated Permission Details
+        in: body
+        name: permission
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission updated successfully
+          schema:
+            $ref: '#/definitions/dto.PermissionResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Permission not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "409":
+          description: Permission name already exists
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update a permission
+      tags:
+      - Admin
+      - Permissions
   /admin/roles:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all roles with their permissions. Requires 'roles:read'
+        permission.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Roles retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.RoleResponse'
+            type: array
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: List all roles
+      tags:
+      - Admin
+      - Roles
     post:
       consumes:
       - application/json
@@ -243,6 +1023,89 @@ paths:
       tags:
       - Admin
       - Roles
+  /admin/roles/approval-requests:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all role approval requests. Requires 'roles:approve'
+        permission.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role approval requests retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.RoleApprovalResponse'
+            type: array
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: List all role approval requests
+      tags:
+      - Admin
+      - Roles
+      - Approval
+  /admin/roles/approval-requests/{id}/decision:
+    put:
+      consumes:
+      - application/json
+      description: Approves or rejects a role approval request. Requires 'roles:approve'
+        permission.
+      parameters:
+      - description: Approval Request ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval Decision
+        in: body
+        name: decision
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ApprovalDecisionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role request processed successfully
+          schema:
+            $ref: '#/definitions/dto.RoleApprovalResponse'
+        "400":
+          description: Invalid request ID format or validation failed
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Approval request not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "409":
+          description: Request already processed
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Approve or reject a role request
+      tags:
+      - Admin
+      - Roles
+      - Approval
   /admin/users:
     get:
       description: Retrieves a paginated list of all users. Requires 'users:read'
@@ -505,6 +1368,26 @@ paths:
       summary: Logout user
       tags:
       - Auth
+  /auth/me:
+    get:
+      description: Returns the current authenticated user's information with their
+        permissions.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current user information
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get Current User Information
+      tags:
+      - Auth
   /auth/refresh:
     post:
       description: Generates a new access token using a valid refresh token from the
@@ -561,6 +1444,757 @@ paths:
       summary: Public Health Check
       tags:
       - Health
+  /organizations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves organizations with optional filters
+      parameters:
+      - description: Organization Type
+        enum:
+        - platform
+        - company
+        - store
+        in: query
+        name: type
+        type: string
+      - description: Parent Organization ID
+        in: query
+        name: parent_id
+        type: string
+      - description: Is Active
+        in: query
+        name: active
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organizations retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.OrganizationResponse'
+            type: array
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: List organizations
+      tags:
+      - Organizations
+  /organizations/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves organization details by ID
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.OrganizationResponse'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get organization by ID
+      tags:
+      - Organizations
+  /organizations/{id}/leave:
+    delete:
+      consumes:
+      - application/json
+      description: Allows a user to leave an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Successfully left organization
+        "400":
+          description: Invalid organization ID
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Leave organization
+      tags:
+      - Organizations
+      - Users
+  /organizations/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves organization details by code
+      parameters:
+      - description: Organization Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.OrganizationResponse'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get organization by code
+      tags:
+      - Organizations
+  /organizations/join:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to join an organization using organization code
+      parameters:
+      - description: Join Organization Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.JoinOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully joined organization
+          schema:
+            $ref: '#/definitions/dto.UserOrganizationResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Organization not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "409":
+          description: User already member of organization
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Join organization
+      tags:
+      - Organizations
+      - Users
+  /roles/approval-requests:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new role approval request. Users can request new roles
+        to be created.
+      parameters:
+      - description: Role Approval Request Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRoleApprovalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Role approval request created successfully
+          schema:
+            $ref: '#/definitions/dto.RoleApprovalResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a role approval request
+      tags:
+      - Roles
+      - Approval
+  /roles/predefined-options:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves available predefined role options with their levels and
+        descriptions.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Predefined role options retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.PredefinedRoleOption'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get predefined role options
+      tags:
+      - Roles
+  /shipping/cancel-list:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated cancellation orders with optional filters
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 50)'
+        in: query
+        name: limit
+        type: integer
+      - description: Filter from date (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: Filter to date (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      - description: Filter by expedition type
+        in: query
+        name: expedition_type
+        type: string
+      - description: Filter by store ID
+        in: query
+        name: store_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated orders items
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get cancellation orders
+      tags:
+      - Shipping
+    post:
+      consumes:
+      - application/json
+      description: Add a tracking number to cancellation orders. When this number
+        is scanned later, it will trigger a warning.
+      parameters:
+      - description: Cancel List Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddToCancelListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully added to cancellation orders
+          schema:
+            $ref: '#/definitions/dto.ScanResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Add tracking number to cancellation orders
+      tags:
+      - Shipping
+  /shipping/cancel-list/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a specific item from cancellation orders
+      parameters:
+      - description: Cancellation Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Item not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Remove item from cancellation orders
+      tags:
+      - Shipping
+  /shipping/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get comprehensive shipping dashboard data including counts, recent
+        scans, and statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dashboard data
+          schema:
+            $ref: '#/definitions/dto.ShippingDashboardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get shipping dashboard data
+      tags:
+      - Shipping
+  /shipping/expedition-prefixes:
+    get:
+      consumes:
+      - application/json
+      description: Get all expedition prefixes with their patterns. Admin only endpoint.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of expedition prefixes
+          schema:
+            items:
+              $ref: '#/definitions/dto.ExpeditionResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get all expedition prefixes
+      tags:
+      - Shipping
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Create a new expedition prefix with pattern. Admin only endpoint.
+      parameters:
+      - description: Expedition Prefix Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateExpeditionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created expedition prefix
+          schema:
+            $ref: '#/definitions/dto.ExpeditionResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create expedition prefix
+      tags:
+      - Shipping
+      - Admin
+  /shipping/expedition-prefixes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an expedition prefix. Admin only endpoint.
+      parameters:
+      - description: Expedition Prefix ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Expedition prefix not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete expedition prefix
+      tags:
+      - Shipping
+      - Admin
+    put:
+      consumes:
+      - application/json
+      description: Update an existing expedition prefix. Admin only endpoint.
+      parameters:
+      - description: Expedition Prefix ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Expedition Prefix Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateExpeditionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated expedition prefix
+          schema:
+            $ref: '#/definitions/dto.ExpeditionResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "404":
+          description: Expedition prefix not found
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update expedition prefix
+      tags:
+      - Shipping
+      - Admin
+  /shipping/export:
+    get:
+      consumes:
+      - application/json
+      description: Export shipping data to Excel or PDF format for reporting
+      parameters:
+      - description: Export format (excel or pdf)
+        in: query
+        name: format
+        required: true
+        type: string
+      - description: Export from date (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: Export to date (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      - description: Filter by store ID
+        in: query
+        name: store_id
+        type: string
+      - description: Data type (shipped, cancelled, logs)
+        in: query
+        name: data_type
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      - application/pdf
+      responses:
+        "200":
+          description: Exported file download
+          schema:
+            type: file
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Export shipping data
+      tags:
+      - Shipping
+  /shipping/scan:
+    post:
+      consumes:
+      - application/json
+      description: Scan a tracking number for shipping. Checks cancellation orders
+        and prevents duplicates. Returns audio type for feedback.
+      parameters:
+      - description: Scan Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ScanShippingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Scan result with audio feedback
+          schema:
+            $ref: '#/definitions/dto.ScanResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Scan tracking number for shipping
+      tags:
+      - Shipping
+  /shipping/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get brief shipping statistics for dashboard widgets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Statistics data
+          schema:
+            $ref: '#/definitions/dto.ShippingDashboardStatsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get shipping statistics
+      tags:
+      - Shipping
+  /shipping/updates:
+    get:
+      consumes:
+      - application/json
+      description: Get recent shipping updates for real-time dashboard functionality
+      parameters:
+      - description: Timestamp for updates since (RFC3339 format)
+        in: query
+        name: since
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Recent updates data
+          schema:
+            $ref: '#/definitions/dto.RecentUpdatesResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get recent updates for real-time
+      tags:
+      - Shipping
+  /users/me/organizations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all organizations for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User organizations retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserOrganizationResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get user organizations
+      tags:
+      - Organizations
+      - Users
 securityDefinitions:
   BearerAuth:
     in: header

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"beresin-backend/internal/config"
+	"go-base-project/internal/config"
 	"context"
 	"net/http"
 	"net/http/httptest"

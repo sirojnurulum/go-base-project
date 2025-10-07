@@ -1,7 +1,7 @@
 package seeder
 
 import (
-	"beresin-backend/internal/model"
+	"go-base-project/internal/model"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
