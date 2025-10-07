@@ -14,11 +14,11 @@ import (
 
 // UserHandler handles HTTP requests related to user management.
 type UserHandler struct {
-	userService service.UserService
+	userService service.UserServiceInterface
 }
 
 // NewUserHandler creates a new instance of UserHandler.
-func NewUserHandler(userService service.UserService) *UserHandler {
+func NewUserHandler(userService service.UserServiceInterface) *UserHandler {
 	return &UserHandler{
 		userService: userService,
 	}
@@ -47,7 +47,8 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	user, err := h.userService.CreateUser(req)
+	// Call service to create user
+	user, err := h.userService.CreateUser(c.Request().Context(), req)
 	if err != nil {
 		return err // Serahkan ke error handler terpusat
 	}
@@ -73,7 +74,7 @@ func (h *UserHandler) ListUsers(c echo.Context) error {
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 	search := c.QueryParam("search")
 
-	pagedResponse, err := h.userService.ListUsers(page, limit, search)
+	pagedResponse, err := h.userService.ListUsers(c.Request().Context(), page, limit, search)
 	if err != nil {
 		return err // Serahkan ke error handler terpusat
 	}
@@ -99,7 +100,7 @@ func (h *UserHandler) GetUserByID(c echo.Context) error {
 		return apperror.NewAppError(http.StatusBadRequest, constant.ErrMsgInvalidUserID, err)
 	}
 
-	user, err := h.userService.GetUserByID(id)
+	user, err := h.userService.GetUserByID(c.Request().Context(), id)
 	if err != nil {
 		return err // Serahkan ke error handler terpusat
 	}
@@ -136,7 +137,7 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	user, err := h.userService.UpdateUser(id, req)
+	user, err := h.userService.UpdateUser(c.Request().Context(), id, req)
 	if err != nil {
 		return err // Serahkan ke error handler terpusat
 	}
@@ -162,7 +163,7 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 		return apperror.NewAppError(http.StatusBadRequest, constant.ErrMsgInvalidUserID, err)
 	}
 
-	err = h.userService.DeleteUser(id)
+	err = h.userService.DeleteUser(c.Request().Context(), id)
 	if err != nil {
 		return err // Serahkan ke error handler terpusat
 	}

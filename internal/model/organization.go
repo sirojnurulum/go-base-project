@@ -4,42 +4,29 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-// OrganizationType represents the type of organization
-type OrganizationType string
-
-const (
-	OrganizationTypePlatform OrganizationType = "platform"
-	OrganizationTypeCompany  OrganizationType = "company"
-	OrganizationTypeStore    OrganizationType = "store"
-)
-
-// Organization represents an organization in the system
+// Organization represents an organization in the system (holding, company, or store)
 type Organization struct {
-	ID          uuid.UUID          `gorm:"type:uuid;primary_key;default:uuid_generate_v7()" json:"id"`
-	Name        string             `gorm:"type:varchar(255);not null" json:"name"`
-	Code        string             `gorm:"type:varchar(50);unique;not null" json:"code"`
-	Type        OrganizationType   `gorm:"type:varchar(50);not null" json:"type"`
-	Description string             `gorm:"type:text" json:"description"`
-	ParentID    *uuid.UUID         `gorm:"type:uuid" json:"parent_id"`
-	Parent      *Organization      `gorm:"foreignKey:ParentID" json:"parent"`
-	Children    []Organization     `gorm:"foreignKey:ParentID" json:"children"`
-	Members     []UserOrganization `gorm:"foreignKey:OrganizationID" json:"members"`
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt     `gorm:"index" json:"-"`
+	ID                   uuid.UUID  `gorm:"type:uuid;primary_key;default:uuid_generate_v7()" json:"id"`
+	Name                 string     `gorm:"type:varchar(100);not null" json:"name"`
+	Code                 string     `gorm:"type:varchar(8);unique;not null" json:"code"`
+	OrganizationType     string     `gorm:"type:varchar(20);not null;check:organization_type IN ('holding','company','store')" json:"organization_type"`
+	ParentOrganizationID *uuid.UUID `gorm:"type:uuid" json:"parent_organization_id,omitempty"`
+	Description          string     `gorm:"type:text" json:"description,omitempty"`
+	CreatedBy            uuid.UUID  `gorm:"type:uuid;not null" json:"created_by"`
+	IsActive             bool       `gorm:"type:boolean;not null;default:true" json:"is_active"`
+	CreatedAt            time.Time  `gorm:"default:now()" json:"created_at"`
+	UpdatedAt            time.Time  `gorm:"default:now()" json:"updated_at"`
+
+	// Relationships
+	ParentOrganization *Organization  `gorm:"foreignKey:ParentOrganizationID" json:"parent_organization,omitempty"`
+	ChildOrganizations []Organization `gorm:"foreignKey:ParentOrganizationID" json:"child_organizations,omitempty"`
+	Creator            User           `gorm:"foreignKey:CreatedBy" json:"creator,omitempty"`
+	Users              []User         `gorm:"many2many:user_organizations;" json:"users,omitempty"`
 }
 
-// UserOrganization represents the many-to-many relationship between users and organizations
-type UserOrganization struct {
-	ID             uuid.UUID    `gorm:"type:uuid;primary_key;default:uuid_generate_v7()" json:"id"`
-	UserID         uuid.UUID    `gorm:"type:uuid;not null" json:"user_id"`
-	OrganizationID uuid.UUID    `gorm:"type:uuid;not null" json:"organization_id"`
-	User           User         `gorm:"foreignKey:UserID" json:"user"`
-	Organization   Organization `gorm:"foreignKey:OrganizationID" json:"organization"`
-	JoinedAt       time.Time    `json:"joined_at"`
-	CreatedAt      time.Time    `json:"created_at"`
-	UpdatedAt      time.Time    `json:"updated_at"`
+// TableName sets the table name for Organization
+func (Organization) TableName() string {
+	return "organizations"
 }

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"beresin-backend/internal/config"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,19 +18,53 @@ type MockAuthorizationService struct {
 	mock.Mock
 }
 
-func (m *MockAuthorizationService) CheckPermission(roleID uuid.UUID, permission string) (bool, error) {
-	args := m.Called(roleID, permission)
+func (m *MockAuthorizationService) CheckPermission(ctx context.Context, roleID uuid.UUID, permission string) (bool, error) {
+	args := m.Called(ctx, roleID, permission)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockAuthorizationService) GetAndCachePermissionsForRole(roleID uuid.UUID) ([]string, error) {
-	args := m.Called(roleID)
+func (m *MockAuthorizationService) GetAndCachePermissionsForRole(ctx context.Context, roleID uuid.UUID) ([]string, error) {
+	args := m.Called(ctx, roleID)
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *MockAuthorizationService) InvalidateRolePermissionsCache(roleID uuid.UUID) error {
-	args := m.Called(roleID)
+func (m *MockAuthorizationService) InvalidateRolePermissionsCache(ctx context.Context, roleID uuid.UUID) error {
+	args := m.Called(ctx, roleID)
 	return args.Error(0)
+}
+
+func (m *MockAuthorizationService) CheckUserOrganizationAccess(ctx context.Context, userID, organizationID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, userID, organizationID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockAuthorizationService) IsRoleSuperAdmin(ctx context.Context, roleID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, roleID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockAuthorizationService) CheckPermissionInOrganization(ctx context.Context, userID, organizationID uuid.UUID, requiredPermission string) (bool, error) {
+	args := m.Called(ctx, userID, organizationID, requiredPermission)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockAuthorizationService) GetUserRoleInOrganization(ctx context.Context, userID, organizationID uuid.UUID) (*uuid.UUID, error) {
+	args := m.Called(ctx, userID, organizationID)
+	result := args.Get(0)
+	if result == nil {
+		return nil, args.Error(1)
+	}
+	return result.(*uuid.UUID), args.Error(1)
+}
+
+func (m *MockAuthorizationService) GetUserPermissionsInOrganization(ctx context.Context, userID, organizationID uuid.UUID) ([]string, error) {
+	args := m.Called(ctx, userID, organizationID)
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *MockAuthorizationService) ValidateRoleAccessibleInOrganization(ctx context.Context, roleID, organizationID uuid.UUID, organizationType string) (bool, error) {
+	args := m.Called(ctx, roleID, organizationID, organizationType)
+	return args.Bool(0), args.Error(1)
 }
 
 func TestRateLimit(t *testing.T) {

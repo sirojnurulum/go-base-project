@@ -8,8 +8,8 @@ import (
 
 // Repositories menampung semua instance repository untuk aplikasi.
 type Repositories struct {
-	User         repository.UserRepository
-	Role         repository.RoleRepository
+	User         repository.UserRepositoryInterface
+	Role         repository.RoleRepositoryInterface
 	Organization repository.OrganizationRepositoryInterface
 }
 

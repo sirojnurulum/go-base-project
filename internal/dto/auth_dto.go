@@ -35,3 +35,21 @@ type LoginResult struct {
 	User         *UserResponse
 	Permissions  []string
 }
+
+// SwitchOrganizationRequest adalah DTO untuk request switch organization context.
+type SwitchOrganizationRequest struct {
+	OrganizationID string `json:"organization_id" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
+}
+
+// SwitchOrganizationResponse adalah DTO untuk response switch organization context.
+type SwitchOrganizationResponse struct {
+	AccessToken    string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	OrganizationID string `json:"organization_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Message        string `json:"message" example:"Organization context switched successfully"`
+}
+
+// SwitchOrganizationResult adalah DTO internal untuk hasil switch organization.
+type SwitchOrganizationResult struct {
+	AccessToken    string
+	OrganizationID string
+}

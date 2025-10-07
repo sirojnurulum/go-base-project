@@ -13,28 +13,32 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/labstack/echo/v4"
-	"golang.org/x/oauth2"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/oauth2"
 )
 
 const refreshTokenCookiePath = "/api/auth"
 
 // AuthHandler handles HTTP requests related to authentication.
 type AuthHandler struct {
-	authService       service.AuthService
-	googleOauthConfig *oauth2.Config
-	frontendURL       string
-	cfg               config.Config
+	authService service.AuthServiceInterface
+	oauthConfig *oauth2.Config
+	cfg         config.Config
+	jwtSecret   string
+	frontendURL string
 }
 
 // NewAuthHandler creates a new instance of AuthHandler.
-func NewAuthHandler(authService service.AuthService, oauthConfig *oauth2.Config, cfg config.Config) *AuthHandler {
+func NewAuthHandler(authService service.AuthServiceInterface, oauthConfig *oauth2.Config, cfg config.Config) *AuthHandler {
 	return &AuthHandler{
-		authService:       authService,
-		googleOauthConfig: oauthConfig,
-		frontendURL:       cfg.FrontendURL,
-		cfg:               cfg,
+		authService: authService,
+		oauthConfig: oauthConfig,
+		cfg:         cfg,
+		jwtSecret:   cfg.JWTSecret,
+		frontendURL: cfg.FrontendURL,
 	}
 }
 
@@ -51,6 +55,7 @@ func NewAuthHandler(authService service.AuthService, oauthConfig *oauth2.Config,
 // @Router       /auth/login [post]
 func (h *AuthHandler) Login(c echo.Context) error {
 	var req dto.LoginRequest
+
 	// Bind dan validasi request dalam satu langkah
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, constant.ErrMsgInvalidRequestFormat)
@@ -59,22 +64,13 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return err // Error sudah dalam format HTTPError dari custom validator
 	}
 
-	loginResult, err := h.authService.Login(req.Username, req.Password)
+	loginResult, err := h.authService.Login(c.Request().Context(), req.Username, req.Password)
 	if err != nil {
 		return err // Serahkan ke error handler terpusat
 	}
 
 	// Atur refresh token di dalam cookie HttpOnly yang aman
-	cookie := new(http.Cookie)
-	cookie.Name = "refresh_token"
-	cookie.Value = loginResult.RefreshToken
-	cookie.Expires = time.Now().Add(7 * 24 * time.Hour)
-	cookie.Path = refreshTokenCookiePath // Batasi scope cookie ke path otentikasi
-	cookie.HttpOnly = true
-	// cookie.Secure = true // Aktifkan di produksi (membutuhkan HTTPS)
-	cookie.SameSite = http.SameSiteLaxMode
-
-	c.SetCookie(cookie)
+	h.setRefreshTokenCookie(c, loginResult.RefreshToken)
 
 	return c.JSON(http.StatusOK, dto.LoginResponse{
 		AccessToken: loginResult.AccessToken,
@@ -100,7 +96,7 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 
 	refreshToken := cookie.Value
 	// Terima tiga nilai balik dari service: token akses baru, token refresh baru, dan error.
-	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(refreshToken)
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(c.Request().Context(), refreshToken)
 	if err != nil {
 		// Juga, hapus cookie yang mungkin tidak valid lagi.
 		c.SetCookie(&http.Cookie{
@@ -113,16 +109,7 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 	}
 
 	// Atur refresh token yang BARU ke dalam cookie. Ini adalah inti dari token rotation.
-	// Kita harus membuat cookie baru secara eksplisit karena atribut seperti Path, HttpOnly, dll.
-	// tidak dikirim oleh browser dalam request, sehingga tidak ada di 'cookie' yang kita baca.
-	c.SetCookie(&http.Cookie{
-		Name:     "refresh_token",
-		Value:    newRefreshToken,
-		Expires:  time.Now().Add(7 * 24 * time.Hour), // Set ulang masa berlaku
-		Path:     refreshTokenCookiePath,             // Set path secara eksplisit
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	})
+	h.setRefreshTokenCookie(c, newRefreshToken)
 
 	return c.JSON(http.StatusOK, dto.RefreshTokenResponse{
 		AccessToken: newAccessToken,
@@ -136,7 +123,7 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 // @Router       /auth/google/login [get]
 func (h *AuthHandler) GoogleLogin(c echo.Context) error {
 	// Dapatkan URL otentikasi dari konfigurasi OAuth2
-	url := h.googleOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	url := h.oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	return c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
@@ -155,7 +142,7 @@ func (h *AuthHandler) GoogleCallback(c echo.Context) error {
 	}
 
 	// Tukar kode dengan token
-	token, err := h.googleOauthConfig.Exchange(context.Background(), code)
+	token, err := h.oauthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		log.Error().Err(err).Msg("Google OAuth exchange failed")
 		return c.Redirect(http.StatusTemporaryRedirect, errorRedirectURL)
@@ -176,21 +163,14 @@ func (h *AuthHandler) GoogleCallback(c echo.Context) error {
 	}
 
 	// Lakukan proses login/registrasi di service
-	loginResult, err := h.authService.LoginWithGoogle(userInfo)
+	loginResult, err := h.authService.LoginWithGoogle(c.Request().Context(), userInfo)
 	if err != nil {
 		log.Error().Err(err).Msg("LoginWithGoogle service failed")
 		return c.Redirect(http.StatusTemporaryRedirect, errorRedirectURL)
 	}
 
 	// Atur refresh token di cookie
-	cookie := new(http.Cookie)
-	cookie.Name = "refresh_token"
-	cookie.Value = loginResult.RefreshToken
-	cookie.Expires = time.Now().Add(7 * 24 * time.Hour)
-	cookie.Path = refreshTokenCookiePath
-	cookie.HttpOnly = true
-	cookie.SameSite = http.SameSiteLaxMode
-	c.SetCookie(cookie)
+	h.setRefreshTokenCookie(c, loginResult.RefreshToken)
 
 	// Redirect ke frontend dengan access token
 	redirectURL := fmt.Sprintf("%s/auth/google/callback?access_token=%s", h.frontendURL, loginResult.AccessToken)
@@ -217,7 +197,7 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 	}
 
 	// Invalidate the token in the backend (e.g., delete from Redis)
-	if err := h.authService.Logout(cookie.Value); err != nil {
+	if err := h.authService.Logout(c.Request().Context(), cookie.Value); err != nil {
 		// The service layer already logs the error. We proceed to clear the cookie.
 	}
 
@@ -234,4 +214,116 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 	c.SetCookie(expiredCookie)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": constant.MsgLogoutSuccess})
+}
+
+// GetCurrentUser
+// @Summary      Get Current User Information
+// @Description  Returns the current authenticated user's information with their permissions.
+// @Tags         Auth
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {object} dto.LoginResponse "Current user information"
+// @Failure      401 {object} apperror.AppError "Unauthorized"
+// @Router       /auth/me [get]
+func (h *AuthHandler) GetCurrentUser(c echo.Context) error {
+	// Get user ID from JWT context
+	userID := c.Get(constant.UserIDKey)
+	if userID == nil {
+		return apperror.NewAppError(http.StatusUnauthorized, constant.ErrMsgUnauthorized, nil)
+	}
+
+	// Get user information with permissions from service
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		return apperror.NewAppError(http.StatusUnauthorized, "Invalid user ID format", nil)
+	}
+
+	loginResult, err := h.authService.GetUserWithPermissions(c.Request().Context(), userUUID.String())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get current user information")
+		return err
+	}
+
+	// Return user information with permissions (similar to login response)
+	response := &dto.LoginResponse{
+		Message:     "User information retrieved successfully",
+		User:        *loginResult.User,
+		Permissions: loginResult.Permissions,
+		// Note: We don't return the access token here since the user already has it
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+// SwitchOrganization
+// @Summary      Switch Organization Context
+// @Description  Switches the user's organization context and returns a new access token with the organization context
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body dto.SwitchOrganizationRequest true "Organization switch request"
+// @Success      200 {object} dto.SwitchOrganizationResponse "Organization switched successfully"
+// @Failure      400 {object} apperror.AppError "Bad request"
+// @Failure      401 {object} apperror.AppError "Unauthorized"
+// @Failure      403 {object} apperror.AppError "Forbidden - No access to organization"
+// @Router       /auth/switch-organization [post]
+func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
+	// Get user ID and role ID from JWT context
+	userID := c.Get(constant.UserIDKey)
+	roleID := c.Get(constant.RoleIDKey)
+
+	if userID == nil || roleID == nil {
+		return apperror.NewAppError(http.StatusUnauthorized, constant.ErrMsgUnauthorized, nil)
+	}
+
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		return apperror.NewAppError(http.StatusUnauthorized, "Invalid user ID format", nil)
+	}
+
+	roleUUID, ok := roleID.(uuid.UUID)
+	if !ok {
+		return apperror.NewAppError(http.StatusUnauthorized, "Invalid role ID format", nil)
+	}
+
+	// Parse request body
+	var req dto.SwitchOrganizationRequest
+	if err := c.Bind(&req); err != nil {
+		return apperror.NewAppError(http.StatusBadRequest, constant.ErrMsgInvalidRequestFormat, err)
+	}
+
+	// Switch organization context and get new token
+	switchResult, err := h.authService.SwitchOrganizationContext(c.Request().Context(), userUUID, roleUUID, req.OrganizationID)
+	if err != nil {
+		var appError *apperror.AppError
+		if errors.As(err, &appError) {
+			return appError
+		}
+		log.Error().Err(err).Msg("Failed to switch organization context")
+		return apperror.NewAppError(http.StatusInternalServerError, "Failed to switch organization context", err)
+	}
+
+	// Return new access token with organization context
+	response := &dto.SwitchOrganizationResponse{
+		AccessToken:    switchResult.AccessToken,
+		OrganizationID: switchResult.OrganizationID,
+		Message:        "Organization context switched successfully",
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+// setRefreshTokenCookie is a helper method to set refresh token cookie with consistent settings
+func (h *AuthHandler) setRefreshTokenCookie(c echo.Context, refreshToken string) {
+	cookie := &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		Path:     refreshTokenCookiePath,
+		HttpOnly: true,
+		Secure:   h.cfg.Env == "production",
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(cookie)
 }

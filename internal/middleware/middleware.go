@@ -13,13 +13,13 @@ import (
 
 // Middleware provides a container for all application middleware that require dependencies.
 type Middleware struct {
-	authorizationService service.AuthorizationService
+	authorizationService service.AuthorizationServiceInterface
 	jwtSecret            string
 }
 
 // NewMiddleware creates a new instance of the Middleware provider.
 // Note that we only inject the JWTSecret, not the entire config struct.
-func NewMiddleware(authorizationService service.AuthorizationService, jwtSecret string) *Middleware {
+func NewMiddleware(authorizationService service.AuthorizationServiceInterface, jwtSecret string) *Middleware {
 	return &Middleware{
 		authorizationService: authorizationService,
 		jwtSecret:            jwtSecret,
@@ -58,10 +58,13 @@ func (m *Middleware) JWT(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 		}
 
-		// Set user ID and role ID in the context for subsequent handlers.
+		// Set user ID, role ID, and organization ID in the context for subsequent handlers.
 		// Use constants for keys to maintain consistency.
 		c.Set(constant.UserIDKey, claims.UserID)
 		c.Set(constant.RoleIDKey, claims.RoleID)
+		if claims.OrganizationID != nil {
+			c.Set(constant.OrganizationIDKey, *claims.OrganizationID)
+		}
 
 		return next(c)
 	}
@@ -81,7 +84,7 @@ func (m *Middleware) RequirePermission(permissionName string) echo.MiddlewareFun
 			}
 
 			// Use the AuthorizationService to check for permission.
-			hasPermission, err := m.authorizationService.CheckPermission(roleID, permissionName)
+			hasPermission, err := m.authorizationService.CheckPermission(c.Request().Context(), roleID, permissionName)
 			if err != nil {
 				// Log the internal error and return a generic message
 				c.Logger().Errorf("permission check failed: %v", err)

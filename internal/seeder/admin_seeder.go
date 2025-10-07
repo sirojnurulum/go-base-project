@@ -9,10 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// CreateAdminUser membuat pengguna admin default jika belum ada di database.
-// Fungsi ini idempoten, artinya aman untuk dijalankan berkali-kali.
+// CreateAdminUser creates default super admin user if it doesn't exist in database.
+// This function is idempotent - safe to run multiple times.
+// Super admin bypasses all permission checks via backend logic.
 func CreateAdminUser(db *gorm.DB, adminPassword string) error {
-	adminUsername := "admin"
+	adminUsername := "superadm"
 
 	// Cek apakah pengguna admin sudah ada
 	var user model.User
@@ -20,7 +21,7 @@ func CreateAdminUser(db *gorm.DB, adminPassword string) error {
 
 	if err == nil {
 		// Pengguna sudah ada, tidak perlu melakukan apa-apa.
-		log.Info().Msgf("Admin user '%s' already exists. Skipping creation.", adminUsername)
+		log.Info().Msgf("Super admin user '%s' already exists. Skipping creation.", adminUsername)
 		return nil
 	}
 
@@ -30,23 +31,23 @@ func CreateAdminUser(db *gorm.DB, adminPassword string) error {
 	}
 
 	// Pengguna belum ada, buat yang baru
-	log.Info().Msgf("Admin user '%s' not found. Creating a new one...", adminUsername)
+	log.Info().Msgf("Super admin user '%s' not found. Creating a new one...", adminUsername)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	// Dapatkan role admin dari database
-	var adminRole model.Role
-	if err := db.Where("name = ?", "admin").First(&adminRole).Error; err != nil {
-		log.Error().Err(err).Msg("Could not find 'admin' role. Please run the RBAC seeder first.")
+	// Get super_admin role from database
+	var superAdminRole model.Role
+	if err := db.Where("name = ?", "super_admin").First(&superAdminRole).Error; err != nil {
+		log.Error().Err(err).Msg("Could not find 'super_admin' role. Please run the RBAC seeder first.")
 		return err
 	}
 
 	adminUser := model.User{
 		Username: adminUsername,
 		Password: string(hashedPassword),
-		RoleID:   &adminRole.ID,
+		RoleID:   &superAdminRole.ID,
 	}
 
 	return db.Create(&adminUser).Error

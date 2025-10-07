@@ -73,6 +73,31 @@ func SetupRoutes(e *echo.Echo, cfg config.Config, handlers *bootstrap.Handlers, 
 		authRoutes.POST("/logout", handlers.Auth.Logout)
 		authRoutes.GET("/google/login", handlers.Auth.GoogleLogin)
 		authRoutes.GET("/google/callback", handlers.Auth.GoogleCallback)
+		authRoutes.GET("/me", handlers.Auth.GetCurrentUser, m.JWT)
+		authRoutes.POST("/switch-organization", handlers.Auth.SwitchOrganization, m.JWT)
+	}
+
+	// General role-related routes (accessible by authenticated users)
+	roleRoutes := api.Group("/roles", m.JWT)
+	{
+		roleRoutes.GET("/predefined-options", handlers.Role.GetPredefinedRoleOptions)
+	}
+
+	// Organization routes (accessible by authenticated users)
+	orgRoutes := api.Group("/organizations", m.JWT)
+	{
+		orgRoutes.GET("", handlers.Organization.ListOrganizations)
+		orgRoutes.GET("/statistics", handlers.Organization.GetOrganizationStatistics)
+		orgRoutes.GET("/:id", handlers.Organization.GetOrganization)
+		orgRoutes.GET("/code/:code", handlers.Organization.GetOrganizationByCode)
+		orgRoutes.POST("/join", handlers.Organization.JoinOrganization)
+		orgRoutes.DELETE("/:id/leave", handlers.Organization.LeaveOrganization)
+	}
+
+	// User-specific organization routes
+	userOrgRoutes := api.Group("/users", m.JWT)
+	{
+		userOrgRoutes.GET("/organizations", handlers.Organization.GetUserOrganizations)
 	}
 
 	// Admin routes with JWT protection
@@ -100,8 +125,8 @@ func SetupRoutes(e *echo.Echo, cfg config.Config, handlers *bootstrap.Handlers, 
 		organizationRoutes := adminRoutes.Group("/organizations")
 		{
 			organizationRoutes.POST("", handlers.Organization.CreateOrganization, m.RequirePermission("organizations:create"))
-			organizationRoutes.GET("", handlers.Organization.GetAllOrganizations, m.RequirePermission("organizations:read"))
-			organizationRoutes.GET("/:id", handlers.Organization.GetOrganizationByID, m.RequirePermission("organizations:read"))
+			organizationRoutes.GET("", handlers.Organization.ListOrganizations, m.RequirePermission("organizations:read"))
+			organizationRoutes.GET("/:id", handlers.Organization.GetOrganization, m.RequirePermission("organizations:read"))
 			organizationRoutes.PUT("/:id", handlers.Organization.UpdateOrganization, m.RequirePermission("organizations:update"))
 			organizationRoutes.DELETE("/:id", handlers.Organization.DeleteOrganization, m.RequirePermission("organizations:delete"))
 			organizationRoutes.POST("/:id/join", handlers.Organization.JoinOrganization, m.RequirePermission("organizations:join"))
