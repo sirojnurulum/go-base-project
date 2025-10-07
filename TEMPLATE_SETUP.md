@@ -6,21 +6,21 @@ After creating a new repository from this template, follow these steps to custom
 
 ### 1. Project Rename
 
-Replace all instances of "beresin-backend" with your project name:
+Replace all instances of "go-base-project" with your actual project name:
 
 ```bash
 # Replace in go.mod
-sed -i '' 's/beresin-backend/your-project-name/g' go.mod
+sed -i '' 's/go-base-project/your-project-name/g' go.mod
 
 # Replace in all Go files
-find . -name "*.go" -type f -exec sed -i '' 's/beresin-backend/your-project-name/g' {} +
+find . -name "*.go" -type f -exec sed -i '' 's/go-base-project/your-project-name/g' {} +
 
 # Replace in docker files
-sed -i '' 's/beresin-backend/your-project-name/g' Dockerfile
-sed -i '' 's/beresin-backend/your-project-name/g' docker-compose.yml
+sed -i '' 's/go-base-project/your-project-name/g' Dockerfile
+sed -i '' 's/go-base-project/your-project-name/g' docker-compose.yml
 
 # Replace in Makefile
-sed -i '' 's/beresin-backend/your-project-name/g' Makefile
+sed -i '' 's/go-base-project/your-project-name/g' Makefile
 ```
 
 ### 2. Environment Configuration

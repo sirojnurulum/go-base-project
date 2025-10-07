@@ -17,10 +17,10 @@
 # Built Visual Studio Code Extensions
 *.vsix
 
-# Git Ignore for beresin-backend
+# Git Ignore for Go Base Project
 tmp/
 build-errors.log
-.env # Jangan pernah commit .env ke git!
+.env # Never commit .env to git!
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -125,7 +125,7 @@ fabric.properties
 go.work
 
 /.idea/.gitignore
-/.idea/beresin-backend.iml
+/.idea/go-base-project.iml
 /.idea/git_toolbox_prj.xml
 /.idea/modules.xml
 /.idea/vcs.xml
@@ -137,7 +137,7 @@ go.work
 .env
 /migration/tmp/
 *service-account-key.json
-beresin-backend-binary
+go-base-project-binary
 /gen_models/
 /.idea/git_toolbox_blame.xml
 .DS_Store
