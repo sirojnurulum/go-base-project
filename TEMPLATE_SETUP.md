@@ -79,7 +79,7 @@ make dev
 
 - API: http://localhost:8080/api/health/public
 - Swagger: http://localhost:8080/swagger/index.html
-- Admin login: admin@example.com / password123
+- Admin login: Use the username/password from your `ADMIN_DEFAULT_USERNAME` and `ADMIN_DEFAULT_PASSWORD` environment variables
 
 ## 🔧 Template Features Included
 

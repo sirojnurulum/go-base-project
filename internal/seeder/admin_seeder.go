@@ -1,8 +1,8 @@
 package seeder
 
 import (
-	"go-base-project/internal/model"
 	"errors"
+	"go-base-project/internal/model"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
@@ -12,25 +12,23 @@ import (
 // CreateAdminUser creates default super admin user if it doesn't exist in database.
 // This function is idempotent - safe to run multiple times.
 // Super admin bypasses all permission checks via backend logic.
-func CreateAdminUser(db *gorm.DB, adminPassword string) error {
-	adminUsername := "superadm"
-
-	// Cek apakah pengguna admin sudah ada
+func CreateAdminUser(db *gorm.DB, adminUsername, adminPassword string) error {
+	// Check if admin user already exists
 	var user model.User
 	err := db.Where("username = ?", adminUsername).First(&user).Error
 
 	if err == nil {
-		// Pengguna sudah ada, tidak perlu melakukan apa-apa.
+		// User already exists, no need to do anything.
 		log.Info().Msgf("Super admin user '%s' already exists. Skipping creation.", adminUsername)
 		return nil
 	}
 
-	// Jika error bukan karena 'record not found', kembalikan error
+	// If error is not because of 'record not found', return error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 
-	// Pengguna belum ada, buat yang baru
+	// User doesn't exist yet, create a new one
 	log.Info().Msgf("Super admin user '%s' not found. Creating a new one...", adminUsername)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
 	if err != nil {

@@ -1,6 +1,9 @@
 package app
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"go-base-project/internal/bootstrap"
 	"go-base-project/internal/config"
 	"go-base-project/internal/handler"
@@ -10,9 +13,6 @@ import (
 	"go-base-project/internal/validator"
 	"go-base-project/platform/database"
 	"go-base-project/platform/redis"
-	"context"
-	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -124,7 +124,7 @@ func runSeeders(db *gorm.DB, cfg config.Config) error {
 	if err := seeder.SeedRolesAndPermissions(db); err != nil {
 		return fmt.Errorf("failed to run RBAC seeder: %w", err)
 	}
-	if err := seeder.CreateAdminUser(db, cfg.AdminDefaultPassword); err != nil {
+	if err := seeder.CreateAdminUser(db, cfg.AdminDefaultUsername, cfg.AdminDefaultPassword); err != nil {
 		return fmt.Errorf("failed to run admin seeder: %w", err)
 	}
 	log.Info().Msg("Seeders completed successfully")

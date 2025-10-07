@@ -18,6 +18,7 @@ type Config struct {
 	JWTSecret            string
 	Env                  string
 	RedisURL             string
+	AdminDefaultUsername string
 	AdminDefaultPassword string
 	GoogleClientID       string
 	GoogleClientSecret   string
@@ -87,6 +88,7 @@ func Load(path ...string) (Config, error) {
 		JWTSecret:             getEnv("JWT_SECRET", ""),
 		Env:                   env,
 		RedisURL:              getEnv("REDIS_URL", "redis://localhost:6379/0"),
+		AdminDefaultUsername:  getEnv("ADMIN_DEFAULT_USERNAME", "superadm"),
 		AdminDefaultPassword:  getEnv("ADMIN_DEFAULT_PASSWORD", "password"),
 		GoogleClientID:        getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret:    getEnv("GOOGLE_CLIENT_SECRET", ""),
