@@ -17,6 +17,8 @@
 # Built Visual Studio Code Extensions
 *.vsix
 
+bin/
+
 # Git Ignore for Go Base Project
 tmp/
 build-errors.log
