@@ -110,4 +110,4 @@ AllowOrigins: cfg.AllowedOrigins  // Includes both frontend and backend
 
 ---
 
-**Note**: This template is synchronized with the Beresin Backend project, ensuring best practices and battle-tested patterns are maintained across both projects.
+**Note**: This template was synchronized with a production-grade project, ensuring best practices and battle-tested patterns are maintained.

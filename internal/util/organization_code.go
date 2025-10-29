@@ -9,7 +9,7 @@ import (
 
 // GenerateOrganizationCode generates a unique organization code from organization name
 // Format: [5-char-from-name][3-random-digits]
-// Example: "PT Beresin Tech" → "BERES123"
+// Example: "PT ABC Tech" → "ABC12345"
 func GenerateOrganizationCode(organizationName string) string {
 	// Clean the name: remove special chars, spaces, numbers
 	cleanName := cleanOrganizationName(organizationName)

@@ -1,10 +1,10 @@
 # ==============================================================================
-# Makefile for beresin-backend
+# Makefile for go-base-project
 # ==============================================================================
 
 # --- Variables ---
 # Nama binary yang akan dihasilkan
-BINARY_NAME=beresin-backend-binary
+BINARY_NAME=go-base-project-binary
 # Path ke file main.go
 CMD_PATH=cmd/api/main.go
 
@@ -116,12 +116,12 @@ swag: ## Generate ulang dokumentasi Swagger
 .PHONY: docker-build
 docker-build: ## Build Docker image
 	@echo ">> Building Docker image..."
-	@docker build -t beresin-backend .
+	@docker build -t go-base-project .
 
 .PHONY: docker-run
 docker-run: ## Run application in Docker container
 	@echo ">> Running Docker container..."
-	@docker run -p 8080:8080 --env-file .env beresin-backend
+	@docker run -p 8080:8080 --env-file .env go-base-project
 
 .PHONY: docker-compose-up
 docker-compose-up: ## Start all services with docker-compose

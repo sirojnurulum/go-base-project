@@ -4,18 +4,18 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: beresin-postgres
+    container_name: go-base-project-postgres
     environment:
-      POSTGRES_DB: beresin_db
-      POSTGRES_USER: beresin_user
-      POSTGRES_PASSWORD: beresin_password
+      POSTGRES_DB: go_base_db
+      POSTGRES_USER: go_base_user
+      POSTGRES_PASSWORD: go_base_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./migrations:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U beresin_user -d beresin_db"]
+      test: ["CMD-SHELL", "pg_isready -U go_base_user -d go_base_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: beresin-redis
+    container_name: go-base-project-redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -37,13 +37,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: beresin-app
+    container_name: go-base-project-app
     ports:
       - "8080:8080"
     environment:
       ENV: development
       PORT: 8080
-      DATABASE_URL: host=postgres user=beresin_user password=beresin_password dbname=beresin_db port=5432 sslmode=disable
+      DATABASE_URL: host=postgres user=go_base_user password=go_base_password dbname=go_base_db port=5432 sslmode=disable
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
       ADMIN_DEFAULT_PASSWORD: admin123

@@ -12,9 +12,9 @@ import (
 	_ "go-base-project/docs" // swagger docs
 )
 
-// @title Beresin App API
+// @title Go Base Project API
 // @version 1.0
-// @description This is the API documentation for the Beresin App backend.
+// @description This is the API documentation for the Go Base Project backend.
 // @host localhost:8080
 // @BasePath /api
 // @securityDefinitions.apikey BearerAuth

@@ -73,6 +73,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/organizations/complete-structure": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates holding-\u003ecompany-\u003estore structure and assigns user. Platform admin only.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Organizations"
+                ],
+                "summary": "Create complete organization structure",
+                "parameters": [
+                    {
+                        "description": "Complete Structure Details",
+                        "name": "structure",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateCompleteStructureRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Complete structure created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CompleteOrganizationStructureResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions - Platform level required",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/organizations/{id}": {
             "put": {
                 "security": [
@@ -247,6 +305,162 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/organizations/{organizationId}/members": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all members of an organization with pagination. Requires 'organizations:read-members' permission.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Organizations",
+                    "Users"
+                ],
+                "summary": "Get organization members",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Organization members retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PagedUserOrganizationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid organization ID or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Organization not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/organizations/{organizationId}/user-history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the user assignment history for an organization with pagination. Requires 'organizations:read-history' permission.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Organizations",
+                    "Users"
+                ],
+                "summary": "Get organization user history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Organization user history retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PagedUserOrganizationHistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid organization ID or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Organization not found",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -519,7 +733,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves all roles with their permissions. Requires 'roles:read' permission.",
+                "description": "Retrieves all roles below the current user's level (hierarchical access control). Requires 'roles:read' permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -530,7 +744,7 @@ const docTemplate = `{
                     "Admin",
                     "Roles"
                 ],
-                "summary": "List all roles",
+                "summary": "List roles based on user level",
                 "responses": {
                     "200": {
                         "description": "Roles retrieved successfully",
@@ -618,34 +832,52 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/roles/approval-requests": {
+        "/admin/roles/organization-types": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves all role approval requests. Requires 'roles:approve' permission.",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Retrieves all roles that are applicable to a specific organization type. Requires 'roles:read' permission.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Admin",
                     "Roles",
-                    "Approval"
+                    "Organizations"
                 ],
-                "summary": "List all role approval requests",
+                "summary": "Get roles for organization type",
+                "parameters": [
+                    {
+                        "enum": [
+                            "platform",
+                            "holding",
+                            "company",
+                            "store"
+                        ],
+                        "type": "string",
+                        "description": "Organization Type",
+                        "name": "organization_type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Role approval requests retrieved successfully",
+                        "description": "Roles retrieved successfully",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.RoleApprovalResponse"
+                                "$ref": "#/definitions/dto.RoleResponse"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid organization type",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
                         }
                     },
                     "403": {
@@ -663,14 +895,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/roles/approval-requests/{id}/decision": {
+        "/admin/roles/{id}": {
             "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Approves or rejects a role approval request. Requires 'roles:approve' permission.",
+                "description": "Updates a role's basic information with hierarchical validation. Requires 'roles:update' permission.",
                 "consumes": [
                     "application/json"
                 ],
@@ -679,38 +906,36 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "Admin",
-                    "Roles",
-                    "Approval"
+                    "Roles"
                 ],
-                "summary": "Approve or reject a role request",
+                "summary": "Update role information",
                 "parameters": [
                     {
                         "type": "string",
-                        "format": "uuid",
-                        "description": "Approval Request ID",
+                        "description": "Role ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Approval Decision",
-                        "name": "decision",
+                        "description": "Updated role information",
+                        "name": "role",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ApprovalDecisionRequest"
+                            "$ref": "#/definitions/dto.UpdateRoleRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Role request processed successfully",
+                        "description": "Role updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.RoleApprovalResponse"
+                            "$ref": "#/definitions/dto.RoleResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid request ID format or validation failed",
+                        "description": "Invalid request payload or validation error",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -722,13 +947,13 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Approval request not found",
+                        "description": "Role not found",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
                     },
                     "409": {
-                        "description": "Request already processed",
+                        "description": "Role name conflict",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -824,7 +1049,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves a paginated list of all users. Requires 'users:read' permission.",
+                "description": "Retrieves a paginated list of users filtered based on the requesting user's level and organization context. Users can only see users with levels below their own level and from their accessible organizations.",
                 "produces": [
                     "application/json"
                 ],
@@ -832,7 +1057,7 @@ const docTemplate = `{
                     "Admin",
                     "Users"
                 ],
-                "summary": "List all users",
+                "summary": "List users with level and organization filtering",
                 "parameters": [
                     {
                         "type": "integer",
@@ -857,7 +1082,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "A paginated list of users",
+                        "description": "A paginated list of filtered users",
                         "schema": {
                             "$ref": "#/definitions/dto.PagedUserResponse"
                         }
@@ -926,6 +1151,207 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Username or email already exists",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/assign-organization": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Assigns a user to an organization with a specific role. Requires 'users:assign-organization' permission.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Assign user to organization",
+                "parameters": [
+                    {
+                        "description": "Assignment Details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AssignUserToOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User assigned successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserOrganizationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User or organization not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "409": {
+                        "description": "User already assigned to organization",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/bulk-assign-organization": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Assigns multiple users to an organization with the same role. Requires 'users:bulk-assign-organization' permission.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Bulk assign users to organization",
+                "parameters": [
+                    {
+                        "description": "Bulk Assignment Details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.BulkAssignUsersToOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bulk assignment completed",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BulkAssignResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Organization not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/log-organization-action": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Manually logs a user organization action for audit purposes. Requires 'users:log-actions' permission.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Log user organization action",
+                "parameters": [
+                    {
+                        "description": "Action Log Details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LogUserOrganizationActionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Action logged successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserOrganizationHistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User or organization not found",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -1112,6 +1538,310 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/users/{userId}/organization-history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the organization assignment history for a user. Requires 'users:read-history' permission.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Get user's organization history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User organization history retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.UserOrganizationHistoryResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{userId}/organizations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all organizations that a user belongs to with pagination. Requires 'users:read' permission.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Get user's organizations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User organizations retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PagedUserOrganizationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{userId}/organizations/{organizationId}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a user's role in an organization. Requires 'users:update-organization-role' permission.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Update user's role in organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Role Update Details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUserOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserOrganizationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload or IDs",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User organization assignment not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Removes a user from an organization. Requires 'users:remove-organization' permission.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
+                    "Users",
+                    "Organizations"
+                ],
+                "summary": "Remove user from organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid user or organization ID",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User organization assignment not found",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/google/callback": {
             "get": {
                 "description": "Handles the callback from Google after successful authentication. This endpoint is not intended to be called directly by users.",
@@ -1260,6 +1990,63 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized or invalid refresh token",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/switch-organization": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Switches the user's organization context and returns a new access token with the organization context",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Switch Organization Context",
+                "parameters": [
+                    {
+                        "description": "Organization switch request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwitchOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Organization switched successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwitchOrganizationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - No access to organization",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -1522,6 +2309,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/organizations/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves organization statistics filtered by user level (platform shows all, company shows only stores, etc)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organizations",
+                    "Statistics"
+                ],
+                "summary": "Get organization statistics",
+                "responses": {
+                    "200": {
+                        "description": "Organization statistics retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OrganizationStatisticsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/organizations/{id}": {
             "get": {
                 "security": [
@@ -1624,51 +2452,52 @@ const docTemplate = `{
                 }
             }
         },
-        "/roles/approval-requests": {
-            "post": {
+        "/organizations/{orgId}/users": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Creates a new role approval request. Users can request new roles to be created.",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Retrieves users within the current organization context. Organization ID is automatically injected by middleware.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Roles",
-                    "Approval"
+                    "Organization",
+                    "Users"
                 ],
-                "summary": "Create a role approval request",
+                "summary": "List users by organization context",
                 "parameters": [
                     {
-                        "description": "Role Approval Request Details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateRoleApprovalRequest"
-                        }
+                        "type": "integer",
+                        "description": "Page number (1-based)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Role approval request created successfully",
+                    "200": {
+                        "description": "Organization-scoped user list",
                         "schema": {
-                            "$ref": "#/definitions/dto.RoleApprovalResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Invalid request payload",
+                        "description": "Bad request - Missing organization context",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "403": {
+                        "description": "Insufficient permissions",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -1682,14 +2511,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/roles/predefined-options": {
-            "get": {
+        "/organizations/{orgId}/users/{userId}/assign-role": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves available predefined role options with their levels and descriptions.",
+                "description": "Assigns a specific role to a user within the current organization context. Demonstrates multi-tenant role isolation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1697,6 +2526,127 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
+                    "Organization",
+                    "Users",
+                    "Roles"
+                ],
+                "summary": "Assign role to user in organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "format": "uuid",
+                        "description": "Role ID to assign",
+                        "name": "roleId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role assigned successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{orgId}/users/{userId}/role": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the role assigned to a user within the current organization context.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization",
+                    "Users",
+                    "Roles"
+                ],
+                "summary": "Get user role in organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User role information",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found in organization",
+                        "schema": {
+                            "$ref": "#/definitions/apperror.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/roles/predefined-options": {
+            "get": {
+                "description": "Retrieves available predefined role templates for role creation based on user's level (hierarchical access control). Requires 'roles:create' permission.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin",
                     "Roles"
                 ],
                 "summary": "Get predefined role options",
@@ -1710,736 +2660,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/cancel-list": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get paginated cancellation orders with optional filters",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Get cancellation orders",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number (default: 1)",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Items per page (default: 50)",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter from date (YYYY-MM-DD)",
-                        "name": "date_from",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter to date (YYYY-MM-DD)",
-                        "name": "date_to",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by expedition type",
-                        "name": "expedition_type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by store ID",
-                        "name": "store_id",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Paginated orders items",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Add a tracking number to cancellation orders. When this number is scanned later, it will trigger a warning.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Add tracking number to cancellation orders",
-                "parameters": [
-                    {
-                        "description": "Cancel List Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AddToCancelListRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully added to cancellation orders",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ScanResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/cancel-list/{id}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Remove a specific item from cancellation orders",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Remove item from cancellation orders",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Cancellation Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success message",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "404": {
-                        "description": "Item not found",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/dashboard": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get comprehensive shipping dashboard data including counts, recent scans, and statistics",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Get shipping dashboard data",
-                "responses": {
-                    "200": {
-                        "description": "Dashboard data",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ShippingDashboardResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
                     "403": {
                         "description": "Insufficient permissions",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/expedition-prefixes": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get all expedition prefixes with their patterns. Admin only endpoint.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping",
-                    "Admin"
-                ],
-                "summary": "Get all expedition prefixes",
-                "responses": {
-                    "200": {
-                        "description": "List of expedition prefixes",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.ExpeditionResponse"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "403": {
-                        "description": "Insufficient permissions",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new expedition prefix with pattern. Admin only endpoint.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping",
-                    "Admin"
-                ],
-                "summary": "Create expedition prefix",
-                "parameters": [
-                    {
-                        "description": "Expedition Prefix Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateExpeditionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created expedition prefix",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ExpeditionResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "403": {
-                        "description": "Insufficient permissions",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/expedition-prefixes/{id}": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update an existing expedition prefix. Admin only endpoint.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping",
-                    "Admin"
-                ],
-                "summary": "Update expedition prefix",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Expedition Prefix ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update Expedition Prefix Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateExpeditionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated expedition prefix",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ExpeditionResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "403": {
-                        "description": "Insufficient permissions",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "404": {
-                        "description": "Expedition prefix not found",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete an expedition prefix. Admin only endpoint.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping",
-                    "Admin"
-                ],
-                "summary": "Delete expedition prefix",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Expedition Prefix ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success message",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "403": {
-                        "description": "Insufficient permissions",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "404": {
-                        "description": "Expedition prefix not found",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/export": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Export shipping data to Excel or PDF format for reporting",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "application/pdf"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Export shipping data",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Export format (excel or pdf)",
-                        "name": "format",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Export from date (YYYY-MM-DD)",
-                        "name": "date_from",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Export to date (YYYY-MM-DD)",
-                        "name": "date_to",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by store ID",
-                        "name": "store_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Data type (shipped, cancelled, logs)",
-                        "name": "data_type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Exported file download",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request parameters",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/scan": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Scan a tracking number for shipping. Checks cancellation orders and prevents duplicates. Returns audio type for feedback.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Scan tracking number for shipping",
-                "parameters": [
-                    {
-                        "description": "Scan Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ScanShippingRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Scan result with audio feedback",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ScanResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/stats": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get brief shipping statistics for dashboard widgets",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Get shipping statistics",
-                "responses": {
-                    "200": {
-                        "description": "Statistics data",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ShippingDashboardStatsResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping/updates": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get recent shipping updates for real-time dashboard functionality",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Shipping"
-                ],
-                "summary": "Get recent updates for real-time",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Timestamp for updates since (RFC3339 format)",
-                        "name": "since",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Recent updates data",
-                        "schema": {
-                            "$ref": "#/definitions/dto.RecentUpdatesResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request parameters",
-                        "schema": {
-                            "$ref": "#/definitions/apperror.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/apperror.AppError"
                         }
@@ -2508,86 +2730,183 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AddToCancelListRequest": {
+        "dto.AssignUserToOrganizationRequest": {
             "type": "object",
             "required": [
-                "tracking_number"
+                "organization_id",
+                "user_id"
             ],
             "properties": {
-                "reason": {
-                    "type": "string"
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
                 },
-                "tracking_number": {
+                "organization_id": {
                     "type": "string",
-                    "maxLength": 255,
-                    "minLength": 3
+                    "example": "b1c2d3e4-f5g6-7890-1234-567890abcdef"
+                },
+                "role_id": {
+                    "type": "string",
+                    "example": "c1d2e3f4-g5h6-7890-1234-567890abcdef"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
                 }
             }
         },
-        "dto.ApprovalDecisionRequest": {
+        "dto.BulkAssignError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "User already assigned to organization"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "d3e4f5g6-h7i8-9012-3456-789012cdefgh"
+                }
+            }
+        },
+        "dto.BulkAssignResponse": {
+            "type": "object",
+            "properties": {
+                "assignments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserOrganizationResponse"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.BulkAssignError"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "type": "string",
+                    "example": "5 users assigned successfully, 1 failed"
+                },
+                "success_count": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "dto.BulkAssignUsersToOrganizationRequest": {
             "type": "object",
             "required": [
-                "status"
+                "organization_id",
+                "user_ids"
             ],
             "properties": {
-                "reason": {
+                "organization_id": {
                     "type": "string",
-                    "maxLength": 255
+                    "example": "c1d2e3f4-g5h6-7890-1234-567890abcdef"
                 },
-                "status": {
+                "role_id": {
                     "type": "string",
-                    "enum": [
-                        "approved",
-                        "rejected"
+                    "example": "d1e2f3g4-h5i6-7890-1234-567890abcdef"
+                },
+                "user_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"a1b2c3d4-e5f6-7890-1234-567890abcdef\"",
+                        " \"b2c3d4e5-f6g7-8901-2345-678901bcdefg\"]"
                     ]
                 }
             }
         },
-        "dto.CancellationOrderResponse": {
+        "dto.CompleteOrganizationStructureResponse": {
             "type": "object",
             "properties": {
-                "added_at": {
+                "company_id": {
                     "type": "string"
                 },
-                "added_by": {
-                    "$ref": "#/definitions/dto.UserBasicResponse"
-                },
-                "created_at": {
+                "holding_id": {
                     "type": "string"
                 },
-                "expedition_type": {
+                "message": {
                     "type": "string"
                 },
-                "id": {
+                "organizations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OrganizationResponse"
+                    }
+                },
+                "store_id": {
                     "type": "string"
                 },
-                "reason": {
+                "user_assigned_to": {
                     "type": "string"
                 },
-                "store": {
-                    "$ref": "#/definitions/dto.OrganizationBasicResponse"
+                "user_memberships": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserOrganizationResponse"
+                    }
                 },
-                "tracking_number": {
+                "user_role": {
                     "type": "string"
                 }
             }
         },
-        "dto.CreateExpeditionRequest": {
+        "dto.CreateCompleteStructureRequest": {
             "type": "object",
             "required": [
-                "expedition_name",
-                "prefix_pattern"
+                "company_name",
+                "holding_name",
+                "store_name",
+                "user_id",
+                "user_role"
             ],
             "properties": {
-                "expedition_name": {
+                "company_description": {
+                    "type": "string"
+                },
+                "company_name": {
                     "type": "string",
                     "maxLength": 100,
-                    "minLength": 2
+                    "minLength": 3
                 },
-                "prefix_pattern": {
+                "holding_description": {
+                    "description": "Optional descriptions",
+                    "type": "string"
+                },
+                "holding_name": {
+                    "description": "Organization structure",
                     "type": "string",
-                    "maxLength": 50,
-                    "minLength": 1
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "store_description": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "user_id": {
+                    "description": "User information",
+                    "type": "string"
+                },
+                "user_role": {
+                    "type": "string",
+                    "enum": [
+                        "holding_owner",
+                        "company_manager",
+                        "store_manager"
+                    ]
                 }
             }
         },
@@ -2595,7 +2914,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "organization_type"
+                "type"
             ],
             "properties": {
                 "description": {
@@ -2607,15 +2926,17 @@ const docTemplate = `{
                     "maxLength": 100,
                     "minLength": 3
                 },
-                "organization_type": {
+                "parentOrganizationId": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string",
                     "enum": [
+                        "platform",
+                        "holding",
                         "company",
                         "store"
                     ]
-                },
-                "parent_organization_id": {
-                    "type": "string"
                 }
             }
         },
@@ -2632,30 +2953,6 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "maxLength": 100,
-                    "minLength": 3
-                }
-            }
-        },
-        "dto.CreateRoleApprovalRequest": {
-            "type": "object",
-            "required": [
-                "requested_level",
-                "requested_role_name"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "requested_level": {
-                    "description": "Level 100 reserved for superadmin",
-                    "type": "integer",
-                    "maximum": 99,
-                    "minimum": 0
-                },
-                "requested_role_name": {
-                    "type": "string",
-                    "maxLength": 50,
                     "minLength": 3
                 }
             }
@@ -2683,6 +2980,13 @@ const docTemplate = `{
                     "maxLength": 50,
                     "minLength": 3
                 },
+                "organization_types": {
+                    "description": "Organization context",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "predefined_name": {
                     "description": "NEW: Android-style name",
                     "type": "string",
@@ -2695,16 +2999,30 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "password",
                 "role_id",
                 "username"
             ],
             "properties": {
+                "auth_provider": {
+                    "description": "Authentication method",
+                    "type": "string",
+                    "enum": [
+                        "local",
+                        "google"
+                    ],
+                    "example": "local"
+                },
                 "email": {
                     "type": "string",
                     "example": "new.user@example.com"
                 },
+                "google_id": {
+                    "description": "Google OAuth ID",
+                    "type": "string",
+                    "example": "110539596352895004866"
+                },
                 "password": {
+                    "description": "Optional for OAuth users",
                     "type": "string",
                     "minLength": 8,
                     "example": "strongpassword123"
@@ -2720,32 +3038,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ExpeditionResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "created_by": {
-                    "$ref": "#/definitions/dto.UserBasicResponse"
-                },
-                "expedition_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "prefix_pattern": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.JoinOrganizationRequest": {
             "type": "object",
             "required": [
@@ -2754,6 +3046,54 @@ const docTemplate = `{
             "properties": {
                 "organization_code": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.LogUserOrganizationActionRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "organization_id",
+                "user_id"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "assigned",
+                        "removed",
+                        "role_updated",
+                        "status_changed"
+                    ],
+                    "example": "assigned"
+                },
+                "new_role": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "new_status": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "organization_id": {
+                    "type": "string",
+                    "example": "b1c2d3e4-f5g6-7890-1234-567890abcdef"
+                },
+                "previous_role": {
+                    "type": "string",
+                    "example": "user"
+                },
+                "previous_status": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "Manual role update by administrator"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
                 }
             }
         },
@@ -2798,20 +3138,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.UserResponse"
                         }
                     ]
-                }
-            }
-        },
-        "dto.OrganizationBasicResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
                 }
             }
         },
@@ -2862,6 +3188,77 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.OrganizationStatisticsResponse": {
+            "type": "object",
+            "properties": {
+                "company_count": {
+                    "type": "integer"
+                },
+                "holding_count": {
+                    "type": "integer"
+                },
+                "platform_count": {
+                    "type": "integer"
+                },
+                "store_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PagedUserOrganizationHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserOrganizationHistoryResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "dto.PagedUserOrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "user_organizations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserOrganizationResponse"
+                    }
                 }
             }
         },
@@ -2926,69 +3323,12 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.RecentUpdatesResponse": {
-            "type": "object",
-            "properties": {
-                "timestamp": {
-                    "type": "string"
-                },
-                "updates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UpdateEvent"
-                    }
-                }
-            }
-        },
         "dto.RefreshTokenResponse": {
             "type": "object",
             "properties": {
                 "access_token": {
                     "type": "string",
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                }
-            }
-        },
-        "dto.RoleApprovalResponse": {
-            "type": "object",
-            "properties": {
-                "approver": {
-                    "description": "Username of approver",
-                    "type": "string"
-                },
-                "approver_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "reason": {
-                    "type": "string"
-                },
-                "requested_by": {
-                    "type": "string"
-                },
-                "requested_by_user": {
-                    "description": "Username of requester",
-                    "type": "string"
-                },
-                "requested_level": {
-                    "type": "integer"
-                },
-                "requested_role_name": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },
@@ -3016,6 +3356,13 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "organization_types": {
+                    "description": "Organization context",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "permissions": {
                     "type": "array",
                     "items": {
@@ -3028,172 +3375,32 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ScanResponse": {
-            "type": "object",
-            "properties": {
-                "audio_type": {
-                    "description": "'success' or 'error'",
-                    "type": "string"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "expedition_type": {
-                    "type": "string"
-                },
-                "is_cancelled": {
-                    "description": "true if tracking number is in cancellation orders",
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "scan_result": {
-                    "description": "success, cancelled_warning, duplicate, failed",
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "tracking_number": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ScanShippingRequest": {
+        "dto.SwitchOrganizationRequest": {
             "type": "object",
             "required": [
-                "tracking_number"
+                "organization_id"
             ],
             "properties": {
-                "tracking_number": {
+                "organization_id": {
                     "type": "string",
-                    "maxLength": 255,
-                    "minLength": 3
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         },
-        "dto.ShippedItemResponse": {
+        "dto.SwitchOrganizationResponse": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "expedition_type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "scanned_at": {
-                    "type": "string"
-                },
-                "scanned_by": {
-                    "$ref": "#/definitions/dto.UserBasicResponse"
-                },
-                "store": {
-                    "$ref": "#/definitions/dto.OrganizationBasicResponse"
-                },
-                "tracking_number": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ShippingDashboardResponse": {
-            "type": "object",
-            "properties": {
-                "cancelled_list": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CancellationOrderResponse"
-                    }
-                },
-                "shipped_items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.ShippedItemResponse"
-                    }
-                },
-                "stats": {
-                    "$ref": "#/definitions/dto.ShippingDashboardStatsResponse"
-                }
-            }
-        },
-        "dto.ShippingDashboardStatsResponse": {
-            "type": "object",
-            "properties": {
-                "this_month_cancelled": {
-                    "type": "integer"
-                },
-                "this_month_shipped": {
-                    "type": "integer"
-                },
-                "this_week_cancelled": {
-                    "type": "integer"
-                },
-                "this_week_shipped": {
-                    "type": "integer"
-                },
-                "today_cancelled": {
-                    "type": "integer"
-                },
-                "today_shipped": {
-                    "type": "integer"
-                },
-                "total_cancelled": {
-                    "type": "integer"
-                },
-                "total_shipped": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.UpdateEvent": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
+                "access_token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "message": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "tracking_number": {
-                    "type": "string"
-                },
-                "type": {
-                    "description": "\"scan\", \"cancel\", \"remove\"",
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateExpeditionRequest": {
-            "type": "object",
-            "required": [
-                "expedition_name",
-                "prefix_pattern"
-            ],
-            "properties": {
-                "expedition_name": {
                     "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
+                    "example": "Organization context switched successfully"
                 },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "prefix_pattern": {
+                "organization_id": {
                     "type": "string",
-                    "maxLength": 50,
-                    "minLength": 1
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         },
@@ -3233,9 +3440,6 @@ const docTemplate = `{
         },
         "dto.UpdateRolePermissionsRequest": {
             "type": "object",
-            "required": [
-                "permission_names"
-            ],
             "properties": {
                 "permission_names": {
                     "description": "A list of permission names to assign to the role.",
@@ -3243,6 +3447,57 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "dto.UpdateRoleRequest": {
+            "type": "object",
+            "required": [
+                "level",
+                "name",
+                "predefined_name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "level": {
+                    "description": "Level 100 reserved for superadmin",
+                    "type": "integer",
+                    "maximum": 99,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                },
+                "organization_types": {
+                    "description": "Organization context",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "predefined_name": {
+                    "description": "Android-style name",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.UpdateUserOrganizationRequest": {
+            "type": "object",
+            "properties": {
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "role_id": {
+                    "type": "string",
+                    "example": "c1d2e3f4-g5h6-7890-1234-567890abcdef"
                 }
             }
         },
@@ -3264,14 +3519,44 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserBasicResponse": {
+        "dto.UserOrganizationHistoryResponse": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
+                "action": {
+                    "type": "string",
+                    "example": "assigned"
                 },
-                "name": {
-                    "type": "string"
+                "action_at": {
+                    "type": "string",
+                    "example": "2024-01-15T10:30:00Z"
+                },
+                "action_by": {
+                    "type": "string",
+                    "example": "f5g6h7i8-j9k0-1234-5678-901234efghij"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "e4f5g6h7-i8j9-0123-4567-890123defghi"
+                },
+                "new_role": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "organization_id": {
+                    "type": "string",
+                    "example": "b1c2d3e4-f5g6-7890-1234-567890abcdef"
+                },
+                "previous_role": {
+                    "type": "string",
+                    "example": "member"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "Promoted to admin role"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
                 }
             }
         },
@@ -3290,7 +3575,10 @@ const docTemplate = `{
                 "organization_id": {
                     "type": "string"
                 },
-                "role_in_organization": {
+                "role": {
+                    "$ref": "#/definitions/dto.RoleResponse"
+                },
+                "role_id": {
                     "type": "string"
                 },
                 "user_id": {
@@ -3301,6 +3589,11 @@ const docTemplate = `{
         "dto.UserResponse": {
             "type": "object",
             "properties": {
+                "auth_provider": {
+                    "description": "Authentication method",
+                    "type": "string",
+                    "example": "local"
+                },
                 "avatar_url": {
                     "type": "string",
                     "example": "https://example.com/avatar.png"
@@ -3312,6 +3605,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+                },
+                "organization_id": {
+                    "type": "string",
+                    "example": "c1d2e3f4-g5h6-7890-1234-567890abcdef"
                 },
                 "role": {
                     "type": "string",
@@ -3343,8 +3640,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "Beresin App API",
-	Description:      "This is the API documentation for the Beresin App backend.",
+	Title:            "Go Base Project API",
+	Description:      "This is the API documentation for the Go Base Project backend.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
