@@ -1,15 +1,15 @@
 package handler
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"go-base-project/internal/apperror"
 	"go-base-project/internal/config"
 	"go-base-project/internal/constant"
 	"go-base-project/internal/dto"
 	"go-base-project/internal/service"
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -208,7 +208,7 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 		Path:     refreshTokenCookiePath,
 		Expires:  time.Unix(0, 0), // Expire immediately
 		HttpOnly: true,
-		Secure:   h.cfg.Env == "production", // Use secure cookies in production
+		Secure:   h.cfg.CookieSecure, // Use config cookie secure setting
 		SameSite: http.SameSiteStrictMode,
 	}
 	c.SetCookie(expiredCookie)
@@ -322,7 +322,7 @@ func (h *AuthHandler) setRefreshTokenCookie(c echo.Context, refreshToken string)
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		Path:     refreshTokenCookiePath,
 		HttpOnly: true,
-		Secure:   h.cfg.Env == "production",
+		Secure:   h.cfg.CookieSecure, // Use config cookie secure setting
 		SameSite: http.SameSiteLaxMode,
 	}
 	c.SetCookie(cookie)

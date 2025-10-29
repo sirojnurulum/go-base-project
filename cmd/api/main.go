@@ -1,11 +1,11 @@
 package main
 
 import (
+	"context"
 	"go-base-project/internal/app"
 	"go-base-project/internal/bootstrap"
 	"go-base-project/internal/config"
 	"go-base-project/platform/logger"
-	"context"
 
 	"github.com/rs/zerolog/log"
 
@@ -29,13 +29,13 @@ func main() {
 	}
 
 	// 2. Initialize Logger
-	logger.Init(cfg.Env)
+	logger.Init("production") // Always use production-ready logging
 
 	// Log the loaded configuration for debugging. Only display safe values.
 	log.Info().
-		Str("environment", cfg.Env).
 		Str("port", cfg.Port).
 		Str("frontend_url", cfg.FrontendURL).
+		Str("backend_url", cfg.BackendURL).
 		Msg("Loaded application configuration")
 
 	// 3. Initialize Tracer Provider

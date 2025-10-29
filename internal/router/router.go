@@ -25,33 +25,34 @@ func SetupRoutes(e *echo.Echo, cfg config.Config, handlers *bootstrap.Handlers, 
 	e.Use(m.Logger())    // 2. Gunakan logger kustom kita yang membaca Request ID
 	e.Use(middleware.Recover())
 
-	// ADD THIS: Security headers middleware
+	// Security headers middleware (always enabled in production-ready setup)
 	if cfg.EnableSecurityHeaders {
 		e.Use(m.SecurityHeaders())
 	}
 
-	// Rate limiting middleware - configurable storage
-	if cfg.Env == "production" || cfg.RateLimitStorage != "" {
-		rateLimitConfig := customMiddleware.RateLimitConfig{
-			RequestsPerSecond: cfg.RateLimitRPS,
-			BurstSize:         cfg.RateLimitBurst,
-			Storage:           cfg.RateLimitStorage,
-		}
-
-		// Add Redis client if using Redis storage
-		if cfg.RateLimitStorage == "redis" && redisClient != nil {
-			rateLimitConfig.RedisClient = redisClient
-		}
-
-		e.Use(m.RateLimit(rateLimitConfig))
+	// Rate limiting middleware - always enabled
+	rateLimitConfig := customMiddleware.RateLimitConfig{
+		RequestsPerSecond: cfg.RateLimitRPS,
+		BurstSize:         cfg.RateLimitBurst,
+		Storage:           cfg.RateLimitStorage,
 	}
 
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{cfg.FrontendURL},
+	// Add Redis client if using Redis storage
+	if cfg.RateLimitStorage == "redis" && redisClient != nil {
+		rateLimitConfig.RedisClient = redisClient
+	}
+
+	e.Use(m.RateLimit(rateLimitConfig))
+
+	// CORS configuration - Simplified using AllowedOrigins from config
+	corsConfig := middleware.CORSConfig{
+		AllowOrigins:     cfg.AllowedOrigins, // Uses FrontendURL and BackendURL
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, echo.HeaderXRequestID},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
-	}))
+	}
+
+	e.Use(middleware.CORSWithConfig(corsConfig))
 
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 

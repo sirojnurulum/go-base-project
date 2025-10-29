@@ -10,9 +10,10 @@ import (
 
 // NewConnection creates and returns a new GORM database connection.
 func NewConnection(cfg config.Config) (*gorm.DB, error) {
+	// Use Info level by default, or Warn if detailed tracing is disabled
 	logLevel := logger.Info
-	if cfg.Env == "production" {
-		logLevel = logger.Warn // Reduce log verbosity in production
+	if !cfg.EnableDetailedTracing {
+		logLevel = logger.Warn // Reduce log verbosity
 	}
 
 	db, err := gorm.Open(postgres.Open(cfg.DatabaseURL), &gorm.Config{

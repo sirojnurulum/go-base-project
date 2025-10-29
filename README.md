@@ -43,49 +43,69 @@ A production-ready Go backend template with comprehensive authentication and rol
 
 ### Environment Setup
 
+#### 🎯 Simplified Configuration Approach
+This template uses a **single production-ready configuration**. No need for multiple environment files.
+
 1. Copy the environment example:
 ```bash
 cp .env.example .env
 ```
 
-2. Configure your environment variables:
+#### 🌐 Base URL Configuration (Most Important!)
+When deploying to a new domain, **only change these two values**:
+
 ```env
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_db_name
-DB_SSL_MODE=disable
+# Local Development
+FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:8080
 
-# Redis Configuration (optional)
-REDIS_ADDR=localhost:6379
-REDIS_PASSWORD=
-REDIS_DB=0
+# Production with Domain
+FRONTEND_URL=https://app.yourdomain.com
+BACKEND_URL=https://api.yourdomain.com
+```
 
-# JWT Configuration
+**That's it!** CORS will automatically be configured based on these URLs.
+
+#### 🔐 Essential Configuration
+
+```env
+# Database
+DATABASE_URL=postgres://username:password@localhost:5432/your_db?sslmode=disable
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# JWT Secret (Generate using: openssl rand -base64 32)
 JWT_SECRET=your-super-secret-jwt-key-here
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
-JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
 
-# Google OAuth (optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_REDIRECT_URL=http://localhost:8080/api/auth/google/callback
+# Admin User
+ADMIN_DEFAULT_USERNAME=superadm
+ADMIN_DEFAULT_PASSWORD=change-this-secure-password
 
-# Server Configuration
-PORT=8080
-ENV=development
-FRONTEND_URL=http://localhost:3000
+# Security Settings (production-ready defaults)
+COOKIE_SECURE=true              # Set to true for HTTPS
+ENABLE_SECURITY_HEADERS=true    # Always enabled
+ENABLE_DETAILED_TRACING=false   # Set to true for debugging
 
 # Rate Limiting
-RATE_LIMIT_RPS=100
-RATE_LIMIT_BURST=200
-RATE_LIMIT_STORAGE=memory  # or "redis"
+RATE_LIMIT_RPS=10
+RATE_LIMIT_BURST=20
+RATE_LIMIT_STORAGE=memory       # Options: memory, redis
 
-# Security
-ENABLE_SECURITY_HEADERS=true
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Logger (optional)
+LOGGER_CONSOLE=false            # Set to true for human-readable logs
 ```
+
+#### 📝 Configuration Benefits
+- ✅ **Single Environment**: No env/dev/prod confusion
+- ✅ **Domain-Ready**: Change domain by updating 2 URLs only
+- ✅ **Auto CORS**: CORS automatically configured from base URLs
+- ✅ **Production-Ready**: Security enabled by default
+- ✅ **Simple Deployment**: Same config structure everywhere
 
 ### Database Setup
 
