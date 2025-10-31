@@ -2,20 +2,19 @@ package main
 
 import (
 	"context"
+	"go-base-project/docs"
 	"go-base-project/internal/app"
 	"go-base-project/internal/bootstrap"
 	"go-base-project/internal/config"
 	"go-base-project/platform/logger"
+	"strings"
 
 	"github.com/rs/zerolog/log"
-
-	_ "go-base-project/docs" // swagger docs
 )
 
 // @title Go Base Project API
 // @version 1.0
 // @description This is the API documentation for the Go Base Project backend.
-// @host localhost:8080
 // @BasePath /api
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -28,7 +27,13 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
 
-	// 2. Initialize Logger
+	// 2. Set Swagger host dynamically from BACKEND_URL
+	// Remove protocol (http:// or https://) from BACKEND_URL
+	backendHost := strings.TrimPrefix(cfg.BackendURL, "https://")
+	backendHost = strings.TrimPrefix(backendHost, "http://")
+	docs.SwaggerInfo.Host = backendHost
+
+	// 3. Initialize Logger
 	logger.Init("production") // Always use production-ready logging
 
 	// Log the loaded configuration for debugging. Only display safe values.
@@ -36,9 +41,10 @@ func main() {
 		Str("port", cfg.Port).
 		Str("frontend_url", cfg.FrontendURL).
 		Str("backend_url", cfg.BackendURL).
+		Str("swagger_host", docs.SwaggerInfo.Host).
 		Msg("Loaded application configuration")
 
-	// 3. Initialize Tracer Provider
+	// 4. Initialize Tracer Provider
 	tp, err := bootstrap.InitTracerProvider("go-base-project", cfg.EnableDetailedTracing)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize tracer provider")
@@ -49,7 +55,7 @@ func main() {
 		}
 	}()
 
-	// 4. Create and run the application
+	// 5. Create and run the application
 	application, err := app.New(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize application")
