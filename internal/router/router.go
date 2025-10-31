@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog/log"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
@@ -44,15 +45,27 @@ func SetupRoutes(e *echo.Echo, cfg config.Config, handlers *bootstrap.Handlers, 
 
 	e.Use(m.RateLimit(rateLimitConfig))
 
-	// CORS configuration - Simplified using AllowedOrigins from config
-	corsConfig := middleware.CORSConfig{
-		AllowOrigins:     cfg.AllowedOrigins, // Uses FrontendURL and BackendURL
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, echo.HeaderXRequestID},
-		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-		AllowCredentials: true,
+	// CORS configuration
+	if cfg.DisableCORS {
+		// Allow all origins (for development/testing only)
+		log.Warn().Msg("⚠️  CORS is DISABLED - All origins are allowed! This should only be used for development/testing.")
+		corsConfig := middleware.CORSConfig{
+			AllowOrigins:     []string{"*"},
+			AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, echo.HeaderXRequestID},
+			AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+			AllowCredentials: false, // Cannot use credentials with wildcard origin
+		}
+		e.Use(middleware.CORSWithConfig(corsConfig))
+	} else {
+		// Normal CORS with specific allowed origins
+		corsConfig := middleware.CORSConfig{
+			AllowOrigins:     cfg.AllowedOrigins, // Uses FrontendURL, BackendURL, and additional origins
+			AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, echo.HeaderXRequestID},
+			AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+			AllowCredentials: true,
+		}
+		e.Use(middleware.CORSWithConfig(corsConfig))
 	}
-
-	e.Use(middleware.CORSWithConfig(corsConfig))
 
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 

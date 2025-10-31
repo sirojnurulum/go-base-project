@@ -43,6 +43,9 @@ type Config struct {
 	EnableDetailedTracing bool
 	CookieSecure          bool
 	CookieSameSite        string
+
+	// CORS Settings
+	DisableCORS bool // Set to true to allow all origins (for development/testing only)
 }
 
 // Load loads environment variables from a .env file or from the system environment.
@@ -125,6 +128,7 @@ func Load(path ...string) (Config, error) {
 		RateLimitRPS:          rateLimitRPS,
 		RateLimitBurst:        rateLimitBurst,
 		RateLimitStorage:      getEnv("RATE_LIMIT_STORAGE", "memory"), // default: memory
+		DisableCORS:           getEnvBool("DISABLE_CORS", false),      // Default: false (CORS enabled)
 	}
 
 	if cfg.JWTSecret == "" {
