@@ -90,6 +90,18 @@ func Load(path ...string) (Config, error) {
 	// Build allowed origins list from base URLs
 	allowedOrigins := []string{frontendURL, backendURL}
 
+	// Add additional allowed origins if specified (for development/testing)
+	additionalOrigins := getEnv("ADDITIONAL_ALLOWED_ORIGINS", "")
+	if additionalOrigins != "" {
+		origins := strings.Split(additionalOrigins, ",")
+		for _, origin := range origins {
+			trimmed := strings.TrimSpace(origin)
+			if trimmed != "" {
+				allowedOrigins = append(allowedOrigins, trimmed)
+			}
+		}
+	}
+
 	cfg := Config{
 		Port:                  getEnv("PORT", "8080"),
 		DatabaseURL:           getEnv("DATABASE_URL", ""),
